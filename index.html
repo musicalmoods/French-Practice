@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide d'étude interactif - Unité 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f1ea;
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background-color: #1e6091;
+            color: #ffffff;
+            border-bottom-color: #1e6091;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .flashcard-front {
+            background-color: #ffffff;
+            color: #184e77;
+        }
+
+        .flashcard-back {
+            background-color: #168aad;
+            color: #ffffff;
+            transform: rotateY(180deg);
+        }
+
+        .practice-input {
+            transition: border-color 0.3s ease;
+        }
+
+        .practice-input.correct {
+            border-color: #22c55e;
+        }
+
+        .practice-input.incorrect {
+            border-color: #ef4444;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #1e6091;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-5xl font-bold text-[#184e77]">Guide d'étude interactif</h1>
+            <p class="text-lg text-gray-600 mt-2">D'Accord 2 - Unité 4</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center border-b-2 border-gray-200 mb-8">
+            <button class="tab-btn active text-lg font-medium py-3 px-6 border-b-4 border-transparent hover:bg-gray-200"
+                onclick="openTab(event, 'vocab')">Vocabulaire</button>
+            <button class="tab-btn text-lg font-medium py-3 px-6 border-b-4 border-transparent hover:bg-gray-200"
+                onclick="openTab(event, 'grammar')">Grammaire</button>
+            <button class="tab-btn text-lg font-medium py-3 px-6 border-b-4 border-transparent hover:bg-gray-200"
+                onclick="openTab(event, 'essay')">Pratique d'essai</button>
+            <button class="tab-btn text-lg font-medium py-3 px-6 border-b-4 border-transparent hover:bg-gray-200"
+                onclick="openTab(event, 'essay-sample')">Exemple d'Essai</button>
+        </nav>
+
+        <main>
+            <div id="vocab" class="tab-content active">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#184e77] mb-2">Vocabulaire</h2>
+                    <p class="text-gray-600">Apprenez les mots essentiels de l'unité 4. Cliquez sur la carte pour voir
+                        la traduction.</p>
+                    <div class="mt-4">
+                        <select id="vocab-select" class="p-2 rounded-md border border-gray-300">
+                            <option value="unite4a">Unité 4a - Les courses</option>
+                            <option value="unite4b">Unité 4b - En ville</option>
+                            <option value="supplementaire">Supplémentaire</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="flashcard-section" class="max-w-md mx-auto">
+                    <div class="flashcard-container">
+                        <div id="flashcard" class="flashcard cursor-pointer"
+                            onclick="this.classList.toggle('is-flipped')">
+                            <div class="flashcard-face flashcard-front">
+                                <p id="flashcard-front-text" class="text-2xl font-semibold text-center p-4"></p>
+                            </div>
+                            <div class="flashcard-face flashcard-back">
+                                <p id="flashcard-back-text" class="text-2xl font-semibold text-center p-4"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-6">
+                        <button id="prev-card"
+                            class="py-2 px-4 bg-[#1e6091] text-white rounded-lg hover:bg-[#1a5581] transition-colors">&lt;
+                            Précédent</button>
+                        <span id="card-counter" class="text-gray-600 font-medium"></span>
+                        <button id="next-card"
+                            class="py-2 px-4 bg-[#1e6091] text-white rounded-lg hover:bg-[#1a5581] transition-colors">Suivant
+                            &gt;</button>
+                    </div>
+                    <div id="examples-output" class="mt-4 p-4 bg-white rounded-lg shadow-md text-gray-700 hidden">
+                        <h4 class="font-semibold mb-2">Exemples supplémentaires:</h4>
+                        <div id="examples-content" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <div class="mt-12 p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#184e77] mb-4 text-center">Banque de Mots Géante
+                    </h2>
+                    <p class="mb-6 text-gray-600 text-center">Explorez des centaines de mots français couramment
+                        utilisés, avec leur genre, leur traduction anglaise et un exemple de phrase. Utilisez la barre
+                        de recherche pour filtrer les mots.</p>
+                    <div class="mb-4">
+                        <input type="text" id="word-bank-search" placeholder="Rechercher un mot..."
+                            class="p-2 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-[#1e6091] focus:outline-none">
+                    </div>
+                    <div class="max-h-[600px] overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Mot Français</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Genre</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Traduction Anglaise</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Exemple (Français)</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Exemple (Anglais)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="word-bank-body" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="grammar" class="tab-content">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#184e77] mb-2">Grammaire</h2>
+                    <p class="text-gray-600">Explorez les concepts grammaticaux clés et testez vos connaissances avec
+                        des exercices interactifs.</p>
+                </div>
+                <div class="grid md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <ul id="grammar-nav" class="space-y-2">
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-verbs">Verbes (voir, etc.)</button></li>
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-negatives">Expressions Négatives</button></li>
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-future">Futur Simple</button></li>
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-si">Si Clauses</button></li>
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-pronouns">Pronoms Relatifs</button></li>
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-double-pronouns">Pronoms Doubles</button></li>
+                            <li><button
+                                    class="grammar-nav-btn w-full text-left p-3 rounded-md bg-white hover:bg-gray-100 transition"
+                                    data-target="g-conjugation-tables">Tableaux de Conjugaison</button></li>
+                        </ul>
+                    </div>
+                    <div id="grammar-content-display" class="md:col-span-3 bg-white p-6 rounded-lg shadow-md">
+                    </div>
+                </div>
+            </div>
+
+            <div id="essay" class="tab-content">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#184e77] mb-2">Pratique d'Essai</h2>
+                    <p class="text-gray-600">Analysez une réponse modèle et entraînez-vous à écrire votre propre
+                        paragraphe sur un thème de l'unité.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-[#184e77] mb-4">Sujet d'essai prédit</h3>
+                        <p class="italic text-gray-700">Décrivez une fois où vous vous êtes perdu(e) en ville ou
+                            racontez une expérience mémorable que vous avez eue en naviguant dans une nouvelle ville.
+                        </p>
+                        <hr class="my-4">
+                        <h3 class="text-xl font-bold text-[#184e77] mb-4">Réponse Modèle</h3>
+                        <p class="text-gray-800 leading-relaxed">
+                            L'année dernière, j'ai eu une expérience inoubliable quand j'ai visité Paris pour la
+                            première fois. Au début, j'étais très excitée de découvrir la ville lumière, mais la
+                            première journée, je me suis malheureusement perdu(e) près de la Tour Eiffel. Je cherchais
+                            une station de métro mais je ne trouvais plus le chemin. Si j'avais eu un plan, je n'aurais
+                            pas été aussi stressé(e)! J'ai décidé de demander de l'aide à une dame âgée qui se tenait au
+                            coin de la rue. Je lui ai demandé la direction de la station, et elle me l'a expliquée avec
+                            beaucoup de patience. Elle m'a dit de traverser le boulevard et de continuer tout droit
+                            jusqu'à un grand bâtiment. C'était le moment où j'ai vraiment apprécié la gentillesse des
+                            Parisiens. Grâce à elle, j'ai pu trouver la station et continuer mon exploration. Cette
+                            expérience, bien que stressante, m'a appris l'importance de la patience et m'a rappelé que
+                            rien n'est impossible avec un peu d'aide.
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-[#184e77] mb-4">Votre Essai</h3>
+                        <p class="mb-4 text-gray-600">Utilisez le vocabulaire et la grammaire de l'unité pour écrire
+                            votre propre réponse ici.</p>
+                        <textarea id="essay-textarea"
+                            class="w-full h-96 p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1e6091] focus:outline-none"
+                            placeholder="Commencez à écrire ici..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="essay-sample" class="tab-content">
+                <div class="bg-white p-6 rounded-lg shadow-md max-w-3xl mx-auto">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#184e77] mb-4 text-center">Sample High-Scoring Essay
+                        Paragraph + DOP Showcase</h2>
+                    <h3 class="text-xl font-semibold text-[#184e77] mb-3">Predicted Topic: Describe a recent shopping
+                        experience, including directions to the store, interaction at the checkout, and reflection on
+                        the outcome.</h3>
+                    <div class="mb-6">
+                        <h4 class="text-lg font-bold text-[#184e77] mb-2">French:</h4>
+                        <p class="text-gray-800 leading-relaxed mb-4">
+                            Hier, je <span class="font-bold underline"
+                                data-term="Passé Composé (Verbe de mouvement)">suis allé</span> au nouveau supermarché
+                            près de chez moi où j'avais repéré une promotion sur les fruits. D'abord, je <span
+                                class="font-bold underline" data-term="Passé Composé (Verbe irrégulier)">l'ai
+                                cherché</span> sur mon application, mais je <span class="font-bold underline"
+                                data-term="Négation (ne...rien)">n'ai rien trouvé</span> d'intéressant pour les légumes.
+                            Si j'<span class="font-bold underline" data-term="Imparfait (Si clause)">avais eu</span> le
+                            temps, je <span class="font-bold underline" data-term="Conditionnel Présent">serais
+                                allé</span> à un autre magasin, mais je n'avais <span class="font-bold underline"
+                                data-term="Négation (ne...plus)">plus</span> beaucoup de choix. J'y <span
+                                class="font-bold underline" data-term="Pronom Adverbial y + Passé Composé">suis
+                                allé</span> en voiture en tournant à gauche au premier carrefour. À mon arrivée, la
+                            caissière <span class="font-bold underline" data-term="Pronom Objet Double (me + les)">me
+                                les a tendus</span> tout de suite après que j'eus passé les articles au scanner.
+                            Normalement, elle <span class="font-bold underline"
+                                data-term="Imparfait (Description/Habitude)">était</span> toujours très souriante.
+                            Ensuite, je <span class="font-bold underline" data-term="Pronom Objet Indirect (lui)">lui ai
+                                demandé</span> si je <span class="font-bold underline"
+                                data-term="Conditionnel Présent (Politesse/Possibilité)">pourrais</span> utiliser ma
+                            carte bancaire, et elle <span class="font-bold underline"
+                                data-term="Pronom Objet Double (me + la)">me l'a validée</span> sans problème. Je <span
+                                class="font-bold underline" data-term="Négation (ne...jamais)">n'ai jamais vu</span>
+                            quelqu'un d'aussi efficace. Enfin, je <span class="font-bold underline"
+                                data-term="Pronom Objet Indirect (leur)">leur ai laissé</span> un pourboire car ils
+                            m'<span class="font-bold underline" data-term="Plus-que-parfait (Action antérieure)">avaient
+                                conseillé</span> les meilleures pommes. Cette expérience m'<span
+                                class="font-bold underline" data-term="Passé Composé (Action complétée)">a vraiment
+                                satisfait</span>, et je la <span class="font-bold underline"
+                                data-term="Futur Simple">referai</span> sans doute la semaine prochaine.
+                        </p>
+                        <h4 class="text-lg font-bold text-[#184e77] mb-2">English:</h4>
+                        <p class="text-gray-800 leading-relaxed">
+                            Yesterday, I <span class="font-bold underline">went</span> to the new supermarket near my
+                            home where I had spotted a sale on fruit. First, I <span
+                                class="font-bold underline">searched for it</span> on my app, but I <span
+                                class="font-bold underline">found nothing</span> interesting for vegetables. If I <span
+                                class="font-bold underline">had had</span> the time, I <span
+                                class="font-bold underline">would have gone</span> to another store, but I no <span
+                                class="font-bold underline">longer</span> had many choices. I <span
+                                class="font-bold underline">went there</span> by car, turning left at the first
+                            intersection. Upon arrival, the cashier <span class="font-bold underline">handed them to
+                                me</span> right after I had scanned the items. Normally, she <span
+                                class="font-bold underline">was</span> always very smiling. Then, I <span
+                                class="font-bold underline">asked her</span> if I <span
+                                class="font-bold underline">could</span> use my bank card, and she <span
+                                class="font-bold underline">processed it for me</span> without any issue. I <span
+                                class="font-bold underline">have never seen</span> anyone so efficient. Finally, I <span
+                                class="font-bold underline">left them</span> a tip because they <span
+                                class="font-bold underline">had advised</span> me on the best apples. This experience
+                            <span class="font-bold underline">really satisfied me</span>, and I <span
+                                class="font-bold underline">will do it again</span> next week without a doubt.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-gray-50 rounded-lg shadow-inner">
+                        <h3 class="text-xl font-bold text-[#184e77] mb-4">Explications des termes soulignés :</h3>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700">
+                            <li><strong>Passé Composé (Verbe de mouvement)</strong> : Utilisé pour une action unique et
+                                complétée dans le passé avec un verbe de mouvement (comme *aller*). Exprime un
+                                changement d'état ou de lieu.</li>
+                            <li><strong>Passé Composé (Verbe irrégulier)</strong> : Indique une action spécifique et
+                                terminée dans le passé avec un verbe irrégulier (comme *chercher* qui devient
+                                *cherché*).</li>
+                            <li><strong>Négation (ne...rien)</strong> : Signifie "nothing" ou "not anything". Remplace
+                                "quelque chose" (something). La structure est `ne` avant le verbe et `rien` après.</li>
+                            <li><strong>Imparfait (Si clause)</strong> : Utilisé dans les clauses commençant par "si"
+                                pour exprimer une condition hypothétique ou irréelle dans le présent ou le futur.</li>
+                            <li><strong>Conditionnel Présent</strong> : Employé après une clause en "si" à l'imparfait
+                                pour exprimer ce qui se passerait si la condition était remplie ("would do"). Peut aussi
+                                exprimer la politesse ou une possibilité.</li>
+                            <li><strong>Négation (ne...plus)</strong> : Signifie "no longer" ou "not anymore". Remplace
+                                "encore" (still/yet).</li>
+                            <li><strong>Pronom Adverbial y + Passé Composé</strong> : Le pronom `y` remplace un lieu ou
+                                une chose introduite par "à". Placé avant l'auxiliaire au passé composé.</li>
+                            <li><strong>Pronom Objet Double (me + les)</strong> : Combinaison d'un pronom objet indirect
+                                (`me`) et d'un pronom objet direct (`les`). L'ordre est important: *me/te/nous/vous*
+                                précèdent *le/la/les*, qui précèdent *lui/leur*.</li>
+                            <li><strong>Imparfait (Description/Habitude)</strong> : Décrit une action habituelle, une
+                                condition continue ou une description dans le passé.</li>
+                            <li><strong>Pronom Objet Indirect (lui)</strong> : Remplace une personne introduite par "à"
+                                (à lui/à elle).</li>
+                            <li><strong>Pronom Objet Double (me + la)</strong> : Combinaison d'un pronom objet indirect
+                                (`me`) et d'un pronom objet direct (`la`).</li>
+                            <li><strong>Négation (ne...jamais)</strong> : Signifie "never". Remplace "toujours" (always)
+                                ou "déjà" (already).</li>
+                            <li><strong>Pronom Objet Indirect (leur)</strong> : Remplace des personnes au pluriel
+                                introduites par "à" (à eux/à elles).</li>
+                            <li><strong>Plus-que-parfait (Action antérieure)</strong> : Exprime une action qui s'est
+                                produite avant une autre action au passé (souvent le passé composé). Formé avec
+                                l'imparfait de l'auxiliaire (avoir ou être) + le participe passé du verbe principal.
+                            </li>
+                            <li><strong>Passé Composé (Action complétée)</strong> : Indique une action unique et achevée
+                                à un moment précis dans le passé.</li>
+                            <li><strong>Futur Simple</strong> : Exprime une action qui aura lieu dans le futur. Utilisé
+                                pour les prédictions, les promesses, ou les actions qui se produiront.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 py-4 border-t border-gray-200">
+            <p class="text-gray-500">Bonne chance pour votre test !</p>
+        </footer>
+    </div>
+
+    <script>
+        const wordBankData = [
+            { fr: "la maison", gender: "f.", en: "house", example_fr: "J'habite dans une grande maison.", example_en: "I live in a big house." },
+            { fr: "la voiture", gender: "f.", en: "car", example_fr: "J'ai une nouvelle voiture bleue.", example_en: "I have a new blue car." },
+            { fr: "le livre", gender: "m.", en: "book", example_fr: "Il lit un livre intéressant.", example_en: "He is reading an interesting book." },
+            { fr: "la table", gender: "f.", en: "table", example_fr: "La table est en bois.", example_en: "The table is made of wood." },
+            { fr: "la chaise", gender: "f.", en: "chair", example_fr: "Assieds-toi sur cette chaise.", example_en: "Sit on this chair." },
+            { fr: "le téléphone", gender: "m.", en: "phone", example_fr: "Mon téléphone est sur la table.", example_en: "My phone is on the table." },
+            { fr: "l'ordinateur", gender: "m.", en: "computer", example_fr: "J'utilise mon ordinateur pour travailler.", example_en: "I use my computer for work." },
+            { fr: "la porte", gender: "f.", en: "door", example_fr: "La porte est ouverte.", example_en: "The door is open." },
+            { fr: "la fenêtre", gender: "f.", en: "window", example_fr: "Ouvre la fenêtre, s'il te plaît.", example_en: "Open the window, please." },
+            { fr: "la cuisine", gender: "f.", en: "kitchen", example_fr: "Nous mangeons dans la cuisine.", example_en: "We eat in the kitchen." },
+            { fr: "la chambre", gender: "f.", en: "bedroom", example_fr: "Ma chambre est au premier étage.", example_en: "My bedroom is on the first floor." },
+            { fr: "la salle de bain", gender: "f.", en: "bathroom", example_fr: "La salle de bain est petite.", example_en: "The bathroom is small." },
+            { fr: "le jardin", gender: "m.", en: "garden", example_fr: "Nous avons un beau jardin.", example_en: "We have a beautiful garden." },
+            { fr: "le travail", gender: "m.", en: "work", example_fr: "J'aime mon travail.", example_en: "I like my work." },
+            { fr: "l'école", gender: "f.", en: "school", example_fr: "Mes enfants vont à l'école.", example_en: "My children go to school." },
+            { fr: "l'argent", gender: "m.", en: "money", example_fr: "J'ai besoin d'argent.", example_en: "I need money." },
+            { fr: "la nourriture", gender: "f.", en: "food", example_fr: "La nourriture est délicieuse.", example_en: "The food is delicious." },
+            { fr: "la boisson", gender: "f.", en: "drink", example_fr: "Quelle boisson veux-tu?", example_en: "What drink do you want?" },
+            { fr: "le temps", gender: "m.", en: "time / weather", example_fr: "Je n'ai pas le temps. Quel temps fait-il?", example_en: "I don't have time. What's the weather like?" },
+            { fr: "la personne", gender: "f.", en: "person", example_fr: "Il y a beaucoup de personnes ici.", example_en: "There are many people here." },
+            { fr: "la chose", gender: "f.", en: "thing", example_fr: "Donne-moi cette chose.", example_en: "Give me that thing." },
+            { fr: "le problème", gender: "m.", en: "problem", example_fr: "J'ai un problème avec mon ordinateur.", example_en: "I have a problem with my computer." },
+            { fr: "la solution", gender: "f.", en: "solution", example_fr: "Nous avons trouvé une solution.", example_en: "We found a solution." },
+            { fr: "l'idée", gender: "f.", en: "idea", example_fr: "C'est une bonne idée.", example_en: "That's a good idea." },
+            { fr: "la question", gender: "f.", en: "question", example_fr: "J'ai une question.", example_en: "I have a question." },
+            { fr: "la réponse", gender: "f.", en: "answer", example_fr: "Donne-moi la réponse.", example_en: "Give me the answer." },
+            { fr: "l'eau", gender: "f.", en: "water", example_fr: "Je voudrais un verre d'eau.", example_en: "I would like a glass of water." },
+            { fr: "le café", gender: "m.", en: "coffee / cafe", example_fr: "Je bois du café au café.", example_en: "I drink coffee at the cafe." },
+            { fr: "le thé", gender: "m.", en: "tea", example_fr: "Tu veux du thé?", example_en: "Do you want some tea?" },
+            { fr: "le lait", gender: "m.", en: "milk", example_fr: "Il n'y a plus de lait.", example_en: "There is no more milk." },
+            { fr: "le pain", gender: "m.", en: "bread", example_fr: "Achète du pain s'il te plaît.", example_en: "Please buy some bread." },
+            { fr: "le fruit", gender: "m.", en: "fruit", example_fr: "J'adore les fruits frais.", example_en: "I love fresh fruits." },
+            { fr: "le légume", gender: "m.", en: "vegetable", example_fr: "Mange tes légumes!", example_en: "Eat your vegetables!" },
+            { fr: "le monde", gender: "m.", en: "world / people", example_fr: "Tout le monde est là.", example_en: "Everyone is here." },
+            { fr: "la vie", gender: "f.", en: "life", example_fr: "La vie est belle.", example_en: "Life is beautiful." },
+            { fr: "la mort", gender: "f.", en: "death", example_fr: "La mort fait partie de la vie.", example_en: "Death is part of life." },
+            { fr: "l'amour", gender: "m.", en: "love", example_fr: "L'amour est un sentiment fort.", example_en: "Love is a strong feeling." },
+            { fr: "la haine", gender: "f.", en: "hatred", example_fr: "La haine est dangereuse.", example_en: "Hatred is dangerous." },
+            { fr: "le soleil", gender: "m.", en: "sun", example_fr: "Le soleil brille aujourd'hui.", example_en: "The sun is shining today." },
+            { fr: "la lune", gender: "f.", en: "moon", example_fr: "La lune est pleine ce soir.", example_en: "The moon is full tonight." },
+            { fr: "l'étoile", gender: "f.", en: "star", example_fr: "Regarde les étoiles dans le ciel.", example_en: "Look at the stars in the sky." },
+            { fr: "le ciel", gender: "m.", en: "sky", example_fr: "Le ciel est bleu.", example_en: "The sky is blue." },
+            { fr: "la terre", gender: "f.", en: "earth / land", example_fr: "La Terre est une planète bleue.", example_en: "Earth is a blue planet." },
+            { fr: "la mer", gender: "f.", en: "sea", example_fr: "Nous allons à la mer cet été.", example_en: "We are going to the sea this summer." },
+            { fr: "la montagne", gender: "f.", en: "mountain", example_fr: "J'aime faire de la randonnée en montagne.", example_en: "I like hiking in the mountains." },
+            { fr: "l'arbre", gender: "m.", en: "tree", example_fr: "Il y a beaucoup d'arbres dans le parc.", example_en: "There are many trees in the park." },
+            { fr: "la fleur", gender: "f.", en: "flower", example_fr: "Elle a offert une belle fleur.", example_en: "She offered a beautiful flower." },
+            { fr: "l'animal", gender: "m.", en: "animal", example_fr: "Mon animal préféré est le chat.", example_en: "My favorite animal is the cat." },
+            { fr: "le chien", gender: "m.", en: "dog", example_fr: "J'ai un chien fidèle.", example_en: "I have a loyal dog." },
+            { fr: "le chat", gender: "m.", en: "cat", example_fr: "Le chat dort sur le canapé.", example_en: "The cat is sleeping on the couch." },
+            { fr: "l'oiseau", gender: "m.", en: "bird", example_fr: "Un oiseau chante dans l'arbre.", example_en: "A bird is singing in the tree." },
+            { fr: "le poisson", gender: "m.", en: "fish", example_fr: "Nous avons mangé du poisson hier soir.", example_en: "We ate fish last night." },
+            { fr: "le jour", gender: "m.", en: "day", example_fr: "Passe une bonne journée!", example_en: "Have a good day!" },
+            { fr: "la nuit", gender: "f.", en: "night", example_fr: "La nuit est tombée.", example_en: "Night has fallen." },
+            { fr: "le matin", gender: "m.", en: "morning", example_fr: "Je me lève tôt le matin.", example_en: "I wake up early in the morning." },
+            { fr: "l'après-midi", gender: "m./f.", en: "afternoon", example_fr: "On se voit l'après-midi.", example_en: "See you in the afternoon." },
+            { fr: "le soir", gender: "m.", en: "evening", example_fr: "Que fais-tu ce soir?", example_en: "What are you doing tonight?" },
+            { fr: "la semaine", gender: "f.", en: "week", example_fr: "Je suis en vacances cette semaine.", example_en: "I'm on vacation this week." },
+            { fr: "le weekend", gender: "m.", en: "weekend", example_fr: "Bon weekend!", example_en: "Have a good weekend!" },
+            { fr: "le mois", gender: "m.", en: "month", example_fr: "C'est le mois de juillet.", example_en: "It's the month of July." },
+            { fr: "l'année", gender: "f.", en: "year", example_fr: "La nouvelle année approche.", example_en: "The new year is approaching." },
+            { fr: "la saison", gender: "f.", en: "season", example_fr: "Ma saison préférée est l'automne.", example_en: "My favorite season is autumn." },
+            { fr: "l'heure", gender: "f.", en: "hour / time (clock)", example_fr: "Quelle heure est-il?", example_en: "What time is it?" },
+            { fr: "la minute", gender: "f.", en: "minute", example_fr: "Attends une minute.", example_en: "Wait a minute." },
+            { fr: "la seconde", gender: "f.", en: "second", example_fr: "Ça prendra quelques secondes.", example_en: "It will take a few seconds." },
+
+            { fr: "être", gender: "", en: "to be", example_fr: "Je suis étudiant.", example_en: "I am a student." },
+            { fr: "avoir", gender: "", en: "to have", example_fr: "Tu as un chien.", example_en: "You have a dog." },
+            { fr: "faire", gender: "", en: "to do/make", example_fr: "Nous faisons nos devoirs.", example_en: "We are doing our homework." },
+            { fr: "aller", gender: "", en: "to go", example_fr: "Ils vont au cinéma.", example_en: "They are going to the cinema." },
+            { fr: "pouvoir", gender: "", en: "to be able to", example_fr: "Je peux t'aider.", example_en: "I can help you." },
+            { fr: "vouloir", gender: "", en: "to want", example_fr: "Elle veut dormir.", example_en: "She wants to sleep." },
+            { fr: "dire", gender: "", en: "to say/tell", example_fr: "Que dis-tu?", example_en: "What are you saying?" },
+            { fr: "venir", gender: "", en: "to come", example_fr: "Tu viens avec nous?", example_en: "Are you coming with us?" },
+            { fr: "voir", gender: "", en: "to see", example_fr: "Je vois un oiseau.", example_en: "I see a bird." },
+            { fr: "savoir", gender: "", en: "to know (facts)", example_fr: "Je sais la réponse.", example_en: "I know the answer." },
+            { fr: "prendre", gender: "", en: "to take", example_fr: "Prends un peu de thé.", example_en: "Have some tea." },
+            { fr: "comprendre", gender: "", en: "to understand", example_fr: "Je ne comprends pas.", example_en: "I don't understand." },
+            { fr: "donner", gender: "", en: "to give", example_fr: "Donne-moi ton livre.", example_en: "Give me your book." },
+            { fr: "parler", gender: "", en: "to speak/talk", example_fr: "Nous parlons français.", example_en: "We speak French." },
+            { fr: "manger", gender: "", en: "to eat", example_fr: "Je mange une pomme.", example_en: "I am eating an apple." },
+            { fr: "boire", gender: "", en: "to drink", example_fr: "Je bois de l'eau.", example_en: "I am drinking water." },
+            { fr: "dormir", gender: "", en: "to sleep", example_fr: "Il dort beaucoup.", example_en: "He sleeps a lot." },
+            { fr: "lire", gender: "", en: "to read", example_fr: "Elle lit le journal.", example_en: "She is reading the newspaper." },
+            { fr: "écrire", gender: "", en: "to write", example_fr: "Écris une lettre.", example_en: "Write a letter." },
+            { fr: "regarder", gender: "", en: "to look at/watch", example_fr: "Regarde la télévision.", example_en: "Watch television." },
+            { fr: "écouter", gender: "", en: "to listen to", example_fr: "Écoute de la musique.", example_en: "Listen to music." },
+            { fr: "travailler", gender: "", en: "to work", example_fr: "Il travaille à la banque.", example_en: "He works at the bank." },
+            { fr: "étudier", gender: "", en: "to study", example_fr: "Nous étudions l'histoire.", example_en: "I am studying history." },
+            { fr: "vivre", gender: "", en: "to live", example_fr: "Où vis-tu?", example_en: "Where do you live?" },
+            { fr: "aimer", gender: "", en: "to like/love", example_fr: "J'aime le chocolat.", example_en: "I like chocolate." },
+            { fr: "détester", gender: "", en: "to hate", example_fr: "Je déteste les araignées.", example_en: "I hate spiders." },
+            { fr: "jouer", gender: "", en: "to play", example_fr: "Ils jouent au football.", example_en: "They play soccer." },
+            { fr: "chanter", gender: "", en: "to sing", example_fr: "Elle chante très bien.", example_en: "She sings very well." },
+            { fr: "danser", gender: "", en: "to dance", example_fr: "Nous dansons toute la nuit.", example_en: "We dance all night." },
+            { fr: "courir", gender: "", en: "to run", example_fr: "Il court vite.", example_en: "He runs fast." },
+            { fr: "nager", gender: "", en: "to swim", example_fr: "J'aime nager dans la mer.", example_en: "I like to swim in the sea." },
+            { fr: "marcher", gender: "", en: "to walk", example_fr: "Nous marchons au parc.", example_en: "We walk to the park." },
+            { fr: "rentrer", gender: "", en: "to return home", example_fr: "Je rentre à 18h.", example_en: "I come home at 6 PM." },
+            { fr: "sortir", gender: "", en: "to go out", example_fr: "Nous sortons ce soir.", example_en: "We are going out tonight." },
+            { fr: "entrer", gender: "", en: "to enter", example_fr: "Entrez, s'il vous plaît.", example_en: "Come in, please." },
+            { fr: "apprendre", gender: "", en: "to learn", example_fr: "J'apprends le français.", example_en: "I am learning French." },
+            { fr: "enseigner", gender: "", en: "to teach", example_fr: "Elle enseigne l'anglais.", example_en: "She teaches English." },
+            { fr: "acheter", gender: "", en: "to buy", example_fr: "Je dois acheter du pain.", example_en: "I need to buy some bread." },
+            { fr: "vendre", gender: "", en: "to sell", example_fr: "Il vend sa voiture.", example_en: "He is selling his car." },
+            { fr: "chercher", gender: "", en: "to look for", example_fr: "Je cherche mes clés.", example_en: "I am looking for my keys." },
+            { fr: "trouver", gender: "", en: "to find", example_fr: "I found a solution.", example_en: "I found a solution." },
+            { fr: "attendre", gender: "", en: "to wait for", example_fr: "J'attends le bus.", example_en: "I am waiting for the bus." },
+            { fr: "perdre", gender: "", en: "to lose", example_fr: "Je ne veux pas perdre mon temps.", example_en: "I don't want to waste my time." },
+            { fr: "gagner", gender: "", en: "to win/earn", example_fr: "Il gagne beaucoup d'argent.", example_en: "He earns a lot of money." },
+            { fr: "commencer", gender: "", en: "to begin/start", example_fr: "Le cours commence à 9h.", example_en: "The class starts at 9 AM." },
+            { fr: "finir", gender: "", en: "to finish", example_fr: "Tu as fini tes devoirs?", example_en: "Have you finished your homework?" },
+            { fr: "choisir", gender: "", en: "to choose", example_fr: "Choisis ta couleur préférée.", example_en: "Choose your favorite color." },
+            { fr: "répondre", gender: "", en: "to answer", example_fr: "Réponds à la question.", example_en: "Answer the question." },
+            { fr: "poser", gender: "", en: "to place/put", example_fr: "Pose le livre sur la table.", example_en: "Put the book on the table." },
+            { fr: "ouvrir", gender: "", en: "to open", example_fr: "Ouvre la porte.", example_en: "Open the door." },
+            { fr: "fermer", gender: "", en: "to close", example_fr: "Ferme la fenêtre.", example_en: "Close the window." },
+
+            { fr: "grand/grande", gender: "m./f.", en: "big/tall", example_fr: "Une grande maison, un grand homme.", example_en: "A big house, a tall man." },
+            { fr: "petit/petite", gender: "m./f.", en: "small", example_fr: "Un petit chien, une petite fille.", example_en: "A small dog, a small girl." },
+            { fr: "beau/belle", gender: "m./f.", en: "beautiful/handsome", example_fr: "Un beau paysage, une belle fleur.", example_en: "A beautiful landscape, a beautiful flower." },
+            { fr: "laid/laide", gender: "m./f.", en: "ugly", example_fr: "Un bâtiment laid, une vieille voiture laide.", example_en: "An ugly building, an ugly old car." },
+            { fr: "bon/bonne", gender: "m./f.", en: "good", example_fr: "Un bon repas, une bonne idée.", example_en: "A good meal, a good idea." },
+            { fr: "mauvais/mauvaise", gender: "m./f.", en: "bad", example_fr: "Une mauvaise habitude, un mauvais film.", example_en: "A bad habit, a bad movie." },
+            { fr: "nouveau/nouvelle", gender: "m./f.", en: "new", example_fr: "Un nouveau livre, une nouvelle voiture.", example_en: "A new book, a new car." },
+            { fr: "vieux/vieille", gender: "m./f.", en: "old", example_fr: "Un vieux ami, une vieille église.", example_en: "An old friend, an old church." },
+            { fr: "jeune", gender: "m./f.", en: "young", example_fr: "Un jeune homme, une jeune femme.", example_en: "A young man, a young woman." },
+            { fr: "content/contente", gender: "m./f.", en: "happy", example_fr: "Je suis content, elle est contente.", example_en: "I am happy (m), she is happy (f)." },
+            { fr: "triste", gender: "m./f.", en: "sad", example_fr: "Il est triste, elle est triste.", example_en: "He is sad, she is sad." },
+            { fr: "fatigué/fatiguée", gender: "m./f.", en: "tired", example_fr: "Je suis fatigué, elle est fatiguée.", example_en: "I am tired (m), she is tired (f)." },
+            { fr: "riche", gender: "m./f.", en: "rich", example_fr: "Il est riche, elle est riche.", example_en: "He is rich, she is rich." },
+            { fr: "pauvre", gender: "m./f.", en: "poor", example_fr: "Ils sont pauvres.", example_en: "They are poor." },
+            { fr: "facile", gender: "m./f.", en: "easy", example_fr: "C'est facile.", example_en: "It's easy." },
+            { fr: "difficile", gender: "m./f.", en: "difficult", example_fr: "C'est difficile.", example_en: "It's difficult." },
+            { fr: "important/importante", gender: "m./f.", en: "important", example_fr: "C'est important.", example_en: "It's important." },
+            { fr: "intéressant/intéressante", gender: "m./f.", en: "interesting", example_fr: "Un film intéressant, une histoire intéressante.", example_en: "An interesting movie, an interesting story." },
+            { fr: "ennuyeux/ennuyeuse", gender: "m./f.", en: "boring", example_fr: "Un cours ennuyeux, une personne ennuyeuse.", example_en: "A boring class, a boring person." },
+            { fr: "chaud/chaude", gender: "m./f.", en: "hot/warm", example_fr: "Il fait chaud. Une tasse chaude.", example_en: "It's hot. A hot cup." },
+            { fr: "froid/froide", gender: "m./f.", en: "cold", example_fr: "Il fait froid. Une eau froide.", example_en: "It's cold. Cold water." },
+            { fr: "propre", gender: "m./f.", en: "clean", example_fr: "La chambre est propre.", example_en: "The room is clean." },
+            { fr: "sale", gender: "m./f.", en: "dirty", example_fr: "Les mains sales.", example_en: "Dirty hands." },
+            { fr: "libre", gender: "m./f.", en: "free", example_fr: "Je suis libre ce soir.", example_en: "I am free tonight." },
+            { fr: "occupé/occupée", gender: "m./f.", en: "busy", example_fr: "Il est occupé, elle est occupée.", example_en: "He is busy, she is busy." },
+            { fr: "seul/seule", gender: "m./f.", en: "alone", example_fr: "Je suis seul, elle est seule.", example_en: "I am alone (m), she is alone (f)." },
+            { fr: "ensemble", gender: "", en: "together", example_fr: "Nous sommes ensemble.", example_en: "We are together." },
+
+            { fr: "très", gender: "", en: "very", example_fr: "C'est très bien.", example_en: "It's very good." },
+            { fr: "beaucoup", gender: "", en: "a lot/much", example_fr: "J'aime beaucoup.", example_en: "I like it a lot." },
+            { fr: "peu", gender: "", en: "little/few", example_fr: "J'ai peu de temps.", example_en: "I have little time." },
+            { fr: "trop", gender: "", en: "too much/many", example_fr: "C'est trop cher.", example_en: "It's too expensive." },
+            { fr: "assez", gender: "", en: "enough", example_fr: "J'ai assez d'argent.", example_en: "I have enough money." },
+            { fr: "toujours", gender: "", en: "always", example_fr: "Il est toujours en retard.", example_en: "He is always late." },
+            { fr: "souvent", gender: "", en: "often", example_fr: "Je mange souvent des fruits.", example_en: "I often eat fruit." },
+            { fr: "rarement", gender: "", en: "rarely", example_fr: "Elle sort rarement.", example_en: "She rarely goes out." },
+            { fr: "jamais", gender: "", en: "never", example_fr: "Je ne fume jamais.", example_en: "I never smoke." },
+            { fr: "vite", gender: "", en: "fast", example_fr: "Cours vite!", example_en: "Run fast!" },
+            { fr: "lentement", gender: "", en: "slowly", example_fr: "Parle lentement.", example_en: "Speak slowly." },
+            { fr: "bien", gender: "", en: "well", example_fr: "Il chante bien.", example_en: "He sings well." },
+            { fr: "mal", gender: "", en: "badly", example_fr: "Elle cuisine mal.", example_en: "She cooks badly." },
+            { fr: "ici", gender: "", en: "here", example_fr: "Viens ici.", example_en: "Come here." },
+            { fr: "là-bas", gender: "", en: "over there", example_fr: "La voiture est là-bas.", example_en: "The car is over there." },
+            { fr: "partout", gender: "", en: "everywhere", example_fr: "J'ai cherché partout.", example_en: "I looked everywhere." },
+            { fr: "nulle part", gender: "", en: "nowhere", example_fr: "I found nowhere.", example_en: "I found nowhere." },
+            { fr: "maintenant", gender: "", en: "now", example_fr: "Fais-le maintenant.", example_en: "Do it now." },
+            { fr: "demain", gender: "", en: "tomorrow", example_fr: "On se voit demain.", example_en: "See you tomorrow." },
+            { fr: "hier", gender: "", en: "yesterday", example_fr: "Je suis allé au cinéma hier.", example_en: "I went to the cinema yesterday." },
+            { fr: "aujourd'hui", gender: "", en: "today", example_fr: "Il fait beau aujourd'hui.", example_en: "It's nice today." },
+            { fr: "bientôt", gender: "", en: "soon", example_fr: "Il arrivera bientôt.", example_en: "He will arrive soon." },
+            { fr: "tard", gender: "", en: "late", example_fr: "Ne sois pas en retard.", example_en: "Don't be late." },
+            { fr: "tôt", gender: "", en: "early", example_fr: "I wake up early.", example_en: "I wake up early." },
+            { fr: "déjà", gender: "", en: "already", example_fr: "J'ai déjà mangé.", example_en: "I have already eaten." },
+            { fr: "encore", gender: "", en: "still/yet/again", example_fr: "Tu as encore faim?", example_en: "Are you still hungry?" },
+            { fr: "puis", gender: "", en: "then", example_fr: "D'abord, puis après.", example_en: "First, then after." },
+            { fr: "aussi", gender: "", en: "also/too", example_fr: "Moi aussi.", example_en: "Me too." },
+            { fr: "comment", gender: "", en: "how", example_fr: "Comment ça va?", example_en: "How are you?" },
+            { fr: "pourquoi", gender: "", en: "why", example_fr: "Pourquoi pas?", example_en: "Why not?" },
+            { fr: "quand", gender: "", en: "when", example_fr: "Quand viens-tu?", example_en: "When are you coming?" },
+            { fr: "où", gender: "", en: "where", example_fr: "Où vas-tu?", example_en: "Where are you going?" },
+            { fr: "qui", gender: "", en: "who", example_fr: "Qui est là?", example_en: "Who is there?" },
+            { fr: "que", gender: "", en: "what", example_fr: "Que fais-tu?", example_en: "What are you doing?" },
+            { fr: "combien", gender: "", en: "how much/many", example_fr: "Combien ça coûte?", example_en: "How much does it cost?" },
+            { fr: "avant", gender: "", en: "before", example_fr: "Avant de partir.", example_en: "Before leaving." },
+            { fr: "après", gender: "", en: "after", example_fr: "Après le travail.", example_en: "After work." },
+            { fr: "pendant", gender: "", en: "during", example_fr: "Pendant les vacances.", example_en: "During the holidays." },
+            { fr: "avec", gender: "", en: "with", example_fr: "Avec plaisir.", example_en: "With pleasure." },
+            { fr: "sans", gender: "", en: "without", example_fr: "Sans sucre.", example_en: "Without sugar." },
+            { fr: "pour", gender: "", en: "for", example_fr: "Pour toi.", example_en: "For you." },
+            { fr: "contre", gender: "", en: "against", example_fr: "I am against it.", example_en: "I am against it." },
+            { fr: "chez", gender: "", en: "at/to (someone's place)", example_fr: "Chez moi.", example_en: "At my place." },
+            { fr: "entre", gender: "", en: "between", example_fr: "Entre nous.", example_en: "Between us." },
+            { fr: "sur", gender: "", en: "on", example_fr: "Sur la table.", example_en: "On the table." },
+            { fr: "sous", gender: "", en: "under", example_fr: "Sous le lit.", example_en: "Under the bed." },
+            { fr: "dans", gender: "", en: "in", example_fr: "Dans la boîte.", example_en: "In the box." },
+            { fr: "devant", gender: "", en: "in front of", example_fr: "Devant la porte.", example_en: "In front of the door." },
+            { fr: "derrière", gender: "", en: "behind", example_fr: "Derrière la maison.", example_en: "Behind the house." },
+            { fr: "à côté de", gender: "", en: "next to", example_fr: "À côté de l'école.", example_en: "Next to the school." },
+            { fr: "loin de", gender: "", en: "far from", example_fr: "Loin de la ville.", example_en: "Far from the city." },
+            { fr: "près de", gender: "", en: "near", example_fr: "Près du parc.", example_en: "Near the park." },
+            { fr: "en face de", gender: "", en: "opposite/across from", example_fr: "En face de la banque.", example_en: "Across from the bank." },
+            { fr: "autour de", gender: "", en: "around", example_fr: "Autour du monde.", example_en: "Around the world." },
+            { fr: "vers", gender: "", en: "towards", example_fr: "Va vers la gare.", example_en: "Go towards the station." },
+            { fr: "sans doute", gender: "", en: "no doubt", example_fr: "Sans doute il viendra.", example_en: "No doubt he will come." },
+            { fr: "environ", gender: "", en: "about/around", example_fr: "Environ dix euros.", example_en: "About ten euros." },
+            { fr: "presque", gender: "", en: "almost", example_fr: "C'est presque fini.", example_en: "It's almost finished." },
+            { fr: "même", gender: "", en: "even", example_fr: "Même lui.", example_en: "Even him." },
+            { fr: "seulement", gender: "", en: "only", example_fr: "Seulement toi.", example_en: "Only you." },
+            { fr: "plutôt", gender: "", en: "rather", example_fr: "Plutôt bien.", example_en: "Rather well." },
+            { fr: "tellement", gender: "", en: "so much/many", example_fr: "Tellement de monde.", example_en: "So many people." },
+            { fr: "aussitôt", gender: "", en: "immediately", example_fr: "Fais-le aussitôt.", example_en: "Do it immediately." },
+            { fr: "certes", gender: "", en: "certainly", example_fr: "Certes, c'est vrai.", example_en: "Certainly, it's true." },
+            { fr: "d'ailleurs", gender: "", en: "by the way/besides", example_fr: "D'ailleurs, comment va ta famille?", example_en: "By the way, how's your family?" },
+            { fr: "enfin", gender: "", en: "finally", example_fr: "Enfin, il est arrivé.", example_en: "Finally, he arrived." },
+            { fr: "parfois", gender: "", en: "sometimes", example_fr: "Il pleut parfois.", example_en: "It rains sometimes." },
+            { fr: "surtout", gender: "", en: "especially", example_fr: "Surtout, n'oublie pas.", example_en: "Above all, don't forget." },
+            { fr: "vite", gender: "", en: "quickly", example_fr: "Viens vite!", example_en: "Come quickly!" },
+            { fr: "lentement", gender: "", en: "slowly", example_fr: "Parle plus lentement.", example_en: "Speak more slowly." },
+            { fr: "calmement", gender: "", en: "calmly", example_fr: "Réponds calmement.", example_en: "Answer calmly." },
+            { fr: "heureusement", gender: "", en: "fortunately", example_fr: "Heureusement, il fait beau.", example_en: "Fortunately, it's nice." },
+            { fr: "malheureusement", gender: "", en: "unfortunately", example_fr: "Malheureusement, je ne peux pas venir.", example_en: "Unfortunately, I can't come." },
+            { fr: "certainement", gender: "", en: "certainly", example_fr: "Il viendra certainement.", example_en: "He will certainly come." },
+            { fr: "probablement", gender: "", en: "probably", example_fr: "Il pleuvra probablement.", example_en: "It will probably rain." },
+            { fr: "finalement", gender: "", en: "finally", example_fr: "Finally, he succeeded.", example_en: "Finally, he succeeded." },
+            { fr: "simplement", gender: "", en: "simply", example_fr: "Fais-le simplement.", example_en: "Simply do it." },
+            { fr: "généralement", gender: "", en: "generally", example_fr: "Je me lève généralement tôt.", example_en: "I generally wake up early." },
+            { fr: "normalement", gender: "", en: "normally", example_fr: "Normalement, ça va.", example_en: "Normally, it's fine." },
+            { fr: "absolument", gender: "", en: "absolutely", example_fr: "C'est absolument nécessaire.", example_en: "It's absolutely necessary." },
+            { fr: "facilement", gender: "", en: "easily", example_fr: "Il apprend facilement.", example_en: "He learns easily." },
+            { fr: "difficilement", gender: "", en: "with difficulty", example_fr: "Il marche difficilement.", example_en: "He walks with difficulty." },
+            { fr: "sérieusement", gender: "", en: "seriously", example_fr: "Parle sérieusement.", example_en: "Speak seriously." },
+            { fr: "vraiment", gender: "", en: "really", example_fr: "C'est vraiment bon.", example_en: "It's really good." },
+            { fr: "sûrement", gender: "", en: "surely", example_fr: "Il viendra sûrement.", example_en: "He will surely come." },
+            { fr: "par exemple", gender: "", en: "for example", example_fr: "Par exemple, lisez ce livre.", example_en: "For example, read this book." },
+            { fr: "tout de suite", gender: "", en: "right away", example_fr: "Fais-le tout de suite.", example_en: "Do it right away." },
+            { fr: "plus tard", gender: "", en: "later", example_fr: "On se voit plus tard.", example_en: "See you later." },
+            { fr: "en fait", gender: "", en: "in fact", example_fr: "En fait, je suis libre.", example_en: "In fact, I'm free." },
+            { fr: "en général", gender: "", en: "in general", example_fr: "En général, j'aime ça.", example_en: "In general, I like it." },
+            { fr: "d'abord", gender: "", en: "first", example_fr: "D'abord, je mange.", example_en: "First, I eat." },
+            { fr: "ensuite", gender: "", en: "then", example_fr: "Ensuite, je dors.", example_en: "Then, I sleep." },
+            { fr: "finalement", gender: "", en: "finally", example_fr: "Finally, all is well.", example_en: "Finally, all is well." },
+            { fr: "soudain", gender: "", en: "suddenly", example_fr: "Soudain, il a plu.", example_en: "Suddenly, it rained." },
+            { fr: "tout à coup", gender: "", en: "all of a sudden", example_fr: "Tout à coup, il est parti.", example_en: "All of a sudden, he left." },
+
+            { fr: "afin de", gender: "", en: "in order to", example_fr: "Il étudie afin de réussir.", example_en: "He studies in order to succeed." },
+            { fr: "à cause de", gender: "", en: "because of", example_fr: "À cause de la pluie, nous restons.", example_en: "Because of the rain, we are staying." },
+            { fr: "grâce à", gender: "", en: "thanks to", example_fr: "Grâce à toi, j'ai réussi.", example_en: "Thanks to you, I succeeded." },
+            { fr: "bien que", gender: "", en: "although (+ subj.)", example_fr: "Bien qu'il soit malade, il travaille.", example_en: "Although he is sick, he works." },
+            { fr: "puisque", gender: "", en: "since (as)", example_fr: "Puisqu'il pleut, restons ici.", example_en: "Since it's raining, let's stay here." },
+            { fr: "tandis que", gender: "", en: "whereas/while", example_fr: "Il lit tandis qu'elle écrit.", example_en: "He reads while she writes." },
+            { fr: "à moins que", gender: "", en: "unless (+ subj.)", example_fr: "Je viendrai à moins qu'il pleuve.", example_en: "I will come unless it rains." },
+            { fr: "pour que", gender: "", en: "so that (+ subj.)", example_fr: "Je travaille pour que tu sois content.", example_en: "I work so that you are happy." },
+            { fr: "sans que", gender: "", en: "without (+ subj.)", example_fr: "Il est parti sans que je le sache.", example_en: "He left without me knowing." },
+            { fr: "avant que", gender: "", en: "before (+ subj.)", example_fr: "Finis avant qu'il arrive.", example_en: "Finish before he arrives." },
+            { fr: "après que", gender: "", en: "after (+ ind.)", example_fr: "Après qu'il est parti, j'ai mangé.", example_en: "After he left, I ate." },
+            { fr: "dès que", gender: "", en: "as soon as", example_fr: "Dès qu'il arrive, dis-le-moi.", example_en: "As soon as he arrives, tell me." },
+            { fr: "lorsque", gender: "", en: "when", example_fr: "Lorsque j'étais jeune.", example_en: "When I was young." },
+            { fr: "comme", gender: "", en: "as/like", example_fr: "Fais comme moi.", example_en: "Do like me." },
+            { fr: "car", gender: "", en: "because (for)", example_fr: "Je suis fatigué car j'ai trop travaillé.", example_en: "I'm tired because I worked too much." },
+            { fr: "donc", gender: "", en: "therefore/so", example_fr: "Il est tard, donc je pars.", example_en: "It's late, so I'm leaving." },
+            { fr: "cependant", gender: "", en: "however", example_fr: "Il fait beau, cependant il fait froid.", example_en: "It's sunny, however it's cold." },
+            { fr: "en fait", gender: "", en: "in fact", example_fr: "En fait, je ne sais pas.", example_en: "In fact, I don't know." },
+            { fr: "d'ailleurs", gender: "", en: "by the way", example_fr: "D'ailleurs, comment va ta famille?", example_en: "By the way, how's your family?" },
+            { fr: "par conséquent", gender: "", en: "consequently", example_fr: "Il a échoué, par conséquent, il doit recommencer.", example_en: "He failed, consequently, he must start over." },
+            { fr: "c'est pourquoi", gender: "", en: "that's why", example_fr: "J'étais malade, c'est pourquoi je n'ai pas pu venir.", example_en: "I was sick, that's why I couldn't come." }
+        ];
+
+        const vocabData = {
+            unite4a: [
+                { fr: "faire la queue", en: "to stand in line" },
+                { fr: "envoyer", en: "to send" },
+                { fr: "retirer de l'argent", en: "to withdraw money" },
+                { fr: "déposer de l'argent", en: "to deposit money" },
+                { fr: "encaisser un chèque", en: "to cash a check" },
+                { fr: "payer en espèces", en: "to pay with cash" },
+                { fr: "acheter en ligne", en: "to buy online" },
+                { fr: "vendre aux enchères", en: "to sell at auction" },
+                { fr: "le bureau de poste (m.)", en: "post office" },
+                { fr: "le facteur (m.)", en: "mail carrier" },
+                { fr: "la lettre (f.)", en: "letter" },
+                { fr: "le colis (m.)", en: "package" },
+                { fr: "le timbre (m.)", en: "stamp" },
+                { fr: "la boîte aux lettres (f.)", en: "mailbox" },
+                { fr: "le guichet (m.)", en: "counter/teller window" },
+                { fr: "la banque (f.)", en: "bank" },
+                { fr: "le compte courant (m.)", en: "checking account" },
+                { fr: "le compte d'épargne (m.)", en: "savings account" },
+                { fr: "le distributeur automatique de billets (m.)", en: "ATM" },
+                { fr: "le chèque (m.)", en: "check" },
+                { fr: "la carte bancaire (f.)", en: "bank card/debit card" },
+                { fr: "l'argent liquide (m.)", en: "cash" },
+                { fr: "la monnaie (f.)", en: "change/currency" },
+                { fr: "le prix (m.)", en: "price" },
+                { fr: "le magasin (m.)", en: "store" },
+                { fr: "le supermarché (m.)", en: "supermarket" },
+                { fr: "le marché (m.)", en: "market" },
+                { fr: "la pharmacie (f.)", en: "pharmacy" },
+                { fr: "la boulangerie (f.)", en: "bakery" },
+                { fr: "la boucherie (f.)", en: "butcher shop" },
+                { fr: "la charcuterie (f.)", en: "deli/pork butcher" },
+                { fr: "la pâtisserie (f.)", en: "pastry shop" },
+                { fr: "la librairie (f.)", en: "bookstore" },
+                { fr: "la papeterie (f.)", en: "stationery store" },
+                { fr: "la cordonnerie (f.)", en: "shoe repair shop" },
+                { fr: "le pressing (m.)", en: "dry cleaner's" },
+                { fr: "la course (f.)", en: "errand; also, race" },
+                { fr: "les courses (f.pl.)", en: "grocery shopping/errands" },
+                { fr: "le centre commercial (m.)", en: "shopping mall" },
+                { fr: "le rayon (m.)", en: "department/aisle" },
+                { fr: "cher/chère", en: "expensive" },
+                { fr: "bon marché", en: "cheap" },
+                { fr: "ouvert/ouverte", en: "open" },
+                { fr: "fermé/fermée", en: "closed" },
+                { fr: "souvent", en: "often" },
+                { fr: "rarement", en: "rarely" },
+                { fr: "toujours", en: "always" },
+                { fr: "jamais", en: "never" },
+                { fr: "quelque chose", en: "something" },
+                { fr: "ne...personne", en: "no one" },
+                { fr: "ne...rien", en: "nothing" },
+                { fr: "ne...plus", en: "no longer" },
+                { fr: "ne...jamais", en: "never" }
+            ],
+            unite4b: [
+                { fr: "se perdre", en: "to get lost" },
+                { fr: "se trouver", en: "to be located, to be found" },
+                { fr: "traverser la rue", en: "to cross the street" },
+                { fr: "tourner à gauche", en: "to turn left" },
+                { fr: "continuer tout droit", en: "to go straight" },
+                { fr: "indiquer le chemin", en: "to show the way" },
+                { fr: "situer sur une carte", en: "to locate on a map" },
+                { fr: "connaître par cœur", en: "to know by heart" },
+                { fr: "savoir faire", en: "to know how to do" },
+                { fr: "visiter un musée", en: "to visit a museum" },
+                { fr: "rendre visite à des amis", en: "to visit friends" },
+                { fr: "la ville (f.)", en: "city/town" },
+                { fr: "le quartier (m.)", en: "neighborhood" },
+                { fr: "la rue (f.)", en: "street" },
+                { fr: "le boulevard (m.)", en: "boulevard" },
+                { fr: "l'avenue (f.)", en: "avenue" },
+                { fr: "la place (f.)", en: "square" },
+                { fr: "le carrefour (m.)", en: "intersection" },
+                { fr: "le feu rouge (m.)", en: "traffic light" },
+                { fr: "le trottoir (m.)", en: "sidewalk" },
+                { fr: "le pont (m.)", en: "bridge" },
+                { fr: "le bâtiment (m.)", en: "building" },
+                { fr: "le monument (m.)", en: "monument" },
+                { fr: "la statue (f.)", en: "statue" },
+                { fr: "l'église (f.)", en: "church" },
+                { fr: "la cathédrale (f.)", en: "catholic church" },
+                { fr: "le musée (m.)", en: "museum" },
+                { fr: "la gare (f.)", en: "train station" },
+                { fr: "la station de métro (f.)", en: "metro station" },
+                { fr: "l'arrêt de bus (m.)", en: "bus stop" },
+                { fr: "le plan (m.)", en: "map" },
+                { fr: "la direction (f.)", en: "direction" },
+                { fr: "le chemin (m.)", en: "path/way" },
+                { fr: "le coin (m.)", en: "corner" },
+                { fr: "le bout (m.)", en: "end" },
+                { fr: "à gauche", en: "to the left" },
+                { fr: "à droite", en: "to the right" },
+                { fr: "tout droit", en: "straight ahead" },
+                { fr: "près de", en: "near" },
+                { fr: "loin de", en: "far from" },
+                { fr: "en face de", en: "across from/opposite" },
+                { fr: "à côté de", en: "next to" },
+                { fr: "derrière", en: "behind" },
+                { fr: "devant", en: "in front of" },
+                { fr: "entre", en: "between" },
+                { fr: "sur", en: "on" },
+                { fr: "sous", en: "under" },
+                { fr: "dans", en: "in" },
+                { fr: "au bout de", en: "at the end of" },
+                { fr: "au coin de", en: "at the corner of" },
+                { fr: "le quartier", en: "neighborhood" },
+                { fr: "le centre-ville", en: "downtown" },
+                { fr: "la banlieue", en: "suburb" },
+                { fr: "le village", en: "village" },
+                { fr: "la campagne", en: "countryside" },
+                { fr: "le lac", en: "lake" },
+                { fr: "la rivière", en: "river" },
+                { fr: "la forêt", en: "forest" }
+            ],
+            supplementaire: [
+                { fr: "la vie quotidienne (f.)", en: "daily life" },
+                { fr: "la routine (f.)", en: "routine" },
+                { fr: "la découverte (f.)", en: "discovery" },
+                { fr: "l'aventure (f.)", en: "adventure" },
+                { fr: "l'expérience (f.)", en: "experience" },
+                { fr: "la joie (f.)", en: "joy" },
+                { fr: "la peur (f.)", en: "fear" },
+                { fr: "le stress (m.)", en: "stress" },
+                { fr: "la solution (f.)", en: "solution" },
+                { fr: "l'aide (f.)", en: "help" },
+                { fr: "le conseil (m.)", en: "advice" },
+                { fr: "l'endroit (m.)", en: "place/spot" },
+                { fr: "le paysage (m.)", en: "landscape" },
+                { fr: "le temps (m.)", en: "time, weather" },
+                { fr: "les gens (m.pl.)", en: "people" },
+                { fr: "l'ami(e) (m./f.)", en: "friend" },
+                { fr: "la famille (f.)", en: "family" },
+                { fr: "le problème (m.)", en: "problem" },
+                { fr: "la surprise (f.)", en: "surprise" },
+                { fr: "le souvenir (m.)", en: "memory, souvenir" },
+                { fr: "le voyage (m.)", en: "trip, journey" },
+                { fr: "les vacances (f.pl.)", en: "vacation" },
+                { fr: "le plaisir (m.)", en: "pleasure" },
+                { fr: "la difficulté (f.)", en: "difficulty" },
+                { fr: "la patience (f.)", en: "patience" },
+                { fr: "le courage", en: "courage" },
+                { fr: "la curiosité", en: "curiosity" },
+                { fr: "la gentillesse", en: "kindness" },
+                { fr: "l'honnêteté (f.)", en: "honesty" },
+                { fr: "la sagesse", en: "wisdom" },
+                { fr: "le bonheur", en: "happiness" },
+                { fr: "la tristesse", en: "sadness" },
+                { fr: "la colère", en: "anger" },
+                { fr: "la surprise", en: "surprise" },
+                { fr: "la peur", en: "fear" },
+                { fr: "l'espoir (m.)", en: "hope" },
+                { fr: "le rêve", en: "dream" },
+                { fr: "la réalité", en: "reality" },
+                { fr: "l'avenir (m.)", en: "future" },
+                { fr: "le passé", en: "past" },
+                { fr: "le présent", en: "present" },
+                { fr: "le souvenir", en: "memory" },
+                { fr: "l'oubli (m.)", en: "forgetfulness" },
+                { fr: "la connaissance", en: "knowledge" },
+                { fr: "l'information (f.)", en: "information" },
+                { fr: "le savoir", en: "knowledge" },
+                { fr: "la sagesse", en: "wisdom" },
+                { fr: "l'éducation (f.)", en: "education" },
+                { fr: "l'apprentissage (m.)", en: "learning" },
+                { fr: "l'enseignement (m.)", en: "teaching" },
+                { fr: "le professeur", en: "teacher (m)" },
+                { fr: "la professeure", en: "teacher (f)" },
+                { fr: "l'étudiant(e)", en: "student" },
+                { fr: "la classe", en: "class" },
+                { fr: "le cours", en: "course" },
+                { fr: "l'examen (m.)", en: "exam" },
+                { fr: "la réussite", en: "success" },
+                { fr: "l'échec (m.)", en: "failure" },
+                { fr: "le diplôme", en: "diploma" },
+                { fr: "la carrière", en: "career" },
+                { fr: "le métier", en: "profession" },
+                { fr: "l'emploi (m.)", en: "job" },
+                { fr: "le chômage", en: "unemployment" },
+                { fr: "le salaire", en: "salary" },
+                { fr: "l'entreprise (f.)", en: "company" },
+                { fr: "le collègue", en: "colleague (m)" },
+                { fr: "la collègue", en: "colleague (f)" },
+                { fr: "la réunion", en: "meeting" },
+                { fr: "le projet", en: "project" },
+                { fr: "la tâche", en: "task" },
+                { fr: "la responsabilité", en: "responsibility" },
+                { fr: "le défi", en: "challenge" },
+                { fr: "la difficulté", en: "difficulty" }
+            ]
+        };
+
+        const grammarContent = {
+            'g-verbs': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Verbes: voir, recevoir, apercevoir, s'apercevoir, & croire</h3>
+                <p class="mb-4 text-gray-600">Ces verbes ont des conjugaisons irrégulières. Voici les tableaux de conjugaison pour le présent.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse mb-4">
+                        <thead><tr><th class="p-2 border">Verbe</th><th class="p-2 border">Je</th><th class="p-2 border">Tu</th><th class="p-2 border">Il/Elle</th><th class="p-2 border">Nous</th><th class="p-2 border">Vous</th><th class="p-2 border">Ils/Elles</th></tr></thead>
+                        <tbody>
+                            <tr class="bg-gray-50">
+                                <td class="p-2 border font-semibold">voir</td><td class="p-2 border">vois</td><td class="p-2 border">vois</td><td class="p-2 border">voit</td><td class="p-2 border">voyons</td><td class="p-2 border">voyez</td><td class="p-2 border">voient</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border font-semibold">recevoir</td><td class="p-2 border">reçois</td><td class="p-2 border">reçois</td><td class="p-2 border">reçoit</td><td class="p-2 border">recevons</td><td class="p-2 border">recevez</td><td class="p-2 border">reçoivent</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="p-2 border font-semibold">croire</td><td class="p-2 border">crois</td><td class="p-2 border">crois</td><td class="p-2 border">croit</td><td class="p-2 border">croyons</td><td class="p-2 border">croyez</td><td class="p-2 border">croient</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr class="my-6"/>
+                <h4 class="text-lg font-semibold text-[#184e77] mb-4">Pratique</h4>
+                <div class="space-y-4">
+                    <div class="practice-item" data-question="Conjuguez 'voir' au futur simple pour 'nous'.">
+                        <label class="block mb-1 text-gray-700">1. Conjuguez 'voir' au futur simple pour 'nous'.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="verrons">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                        <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                     <div class="practice-item" data-question="Conjuguez 's'apercevoir' au passé composé pour 'elle'.">
+                        <label class="block mb-1 text-gray-700">2. Conjuguez 's'apercevoir' au passé composé pour 'elle'.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="s'est aperçue">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                     <div class="practice-item" data-question="Conjuguez 'croire' à l'imparfait pour 'ils'.">
+                        <label class="block mb-1 text-gray-700">3. Conjuguez 'croire' à l'imparfait pour 'ils'.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="croyaient">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                </div>
+            `,
+            'g-negatives': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Expressions Négatives</h3>
+                <p class="mb-4 text-gray-600">Pour former une négation, on entoure le verbe conjugué avec 'ne...pas', 'ne...jamais', 'ne...rien', etc.</p>
+                <ul class="list-disc list-inside space-y-2 mb-6">
+                    <li><code class="bg-gray-200 rounded px-1">ne... pas</code> (not)</li>
+                    <li><code class="bg-gray-200 rounded px-1">ne... jamais</code> (never)</li>
+                    <li><code class="bg-gray-200 rounded px-1">ne... rien</code> (nothing)</li>
+                    <li><code class="bg-gray-200 rounded px-1">ne... personne</code> (no one)</li>
+                    <li><code class="bg-gray-200 rounded px-1">ne... plus</code> (no longer)</li>
+                </ul>
+                <hr class="my-6"/>
+                <h4 class="text-lg font-semibold text-[#184e77] mb-4">Pratique</h4>
+                 <div class="space-y-4">
+                    <div class="practice-item" data-question="Rendez la phrase négative: 'Je mange quelque chose.'">
+                        <label class="block mb-1 text-gray-700">1. Rendez la phrase négative: "Je mange quelque chose."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Je ne mange rien.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Rendez la phrase négative: 'Tu as déjà visité la France.'">
+                        <label class="block mb-1 text-gray-700">2. Rendez la phrase négative: "Tu as déjà visité la France."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Tu n'as jamais visité la France.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Combinez ces deux idées avec 'ne...ni...ni': 'Il ne joue pas au tennis. Il ne joue pas au football.'">
+                        <label class="block mb-1 text-gray-700">3. Combinez ces deux idées avec 'ne...ni...ni': "Il ne joue pas au tennis. Il ne joue pas au football."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Il ne joue ni au tennis ni au football.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                </div>
+            `,
+            'g-future': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Futur Simple</h3>
+                <p class="mb-4 text-gray-600">Le futur simple exprime une action qui aura lieu dans le futur. Il a des radicaux irréguliers pour certains verbes communs.</p>
+                 <ul class="list-disc list-inside space-y-2 mb-6">
+                    <li><span class="font-semibold">Aller:</span> <code class="bg-gray-200 rounded px-1">ir-</code> (j'irai)</li>
+                    <li><span class="font-semibold">Avoir:</span> <code class="bg-gray-200 rounded px-1">aur-</code> (j'aurai)</li>
+                    <li><span class="font-semibold">Être:</span> <code class="bg-gray-200 rounded px-1">ser-</code> (je serai)</li>
+                    <li><span class="font-semibold">Faire:</span> <code class="bg-gray-200 rounded px-1">fer-</code> (je ferai)</li>
+                    <li><span class="font-semibold">Voir:</span> <code class="bg-gray-200 rounded px-1">verr-</code> (je verrai)</li>
+                </ul>
+                <hr class="my-6"/>
+                <h4 class="text-lg font-semibold text-[#184e77] mb-4">Pratique</h4>
+                 <div class="space-y-4">
+                    <div class="practice-item" data-question="Conjuguez 'faire' au futur simple pour 'nous'.">
+                        <label class="block mb-1 text-gray-700">1. Conjuguez 'faire' au futur simple pour 'nous'.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="ferons">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Conjuguez 'être' au futur simple pour 'elles'.">
+                        <label class="block mb-1 text-gray-700">2. Conjuguez 'être' au futur simple pour 'elles'.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="seront">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Remplissez le vide avec la forme correcte d''aller' au futur simple: 'Tu ______ au marché ce weekend.'">
+                        <label class="block mb-1 text-gray-700">3. Remplissez le vide avec la forme correcte d''aller' au futur simple: "Tu ______ au marché ce weekend."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="iras">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                </div>
+            `,
+            'g-si': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Si Clauses</h3>
+                <p class="mb-4 text-gray-600">Les clauses conditionnelles ('si' clauses) expriment une condition et un résultat. Les temps des verbes doivent correspondre.</p>
+                <ul class="list-disc list-inside space-y-2 mb-6">
+                    <li><b>Condition réelle:</b> <code class="bg-gray-200 rounded px-1">Si + présent, futur simple</code>. <br>Ex: Si tu étudies, tu réussiras.</li>
+                    <li><b>Condition hypothétique:</b> <code class="bg-gray-200 rounded px-1">Si + imparfait, conditionnel</code>. <br>Ex: Si j'avais le temps, je voyagerais.</li>
+                </ul>
+                 <hr class="my-6"/>
+                <h4 class="text-lg font-semibold text-[#184e77] mb-4">Pratique</h4>
+                 <div class="space-y-4">
+                    <div class="practice-item" data-question="Complétez: 'Si j' (avoir) un million, j' (acheter) une maison.' (Type 2 condition)">
+                        <label class="block mb-1 text-gray-700">1. Complétez: "Si j' (avoir) un million, j' (acheter) une maison."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="avais, achèterais">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Complétez: 'Si tu (finir) tes devoirs, nous (aller) au cinéma.' (Type 1 condition)">
+                        <label class="block mb-1 text-gray-700">2. Complétez: "Si tu (finir) tes devoirs, nous (aller) au cinéma."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="finis, irons">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                     <div class="practice-item" data-question="Transformez en clause 'si' de Type 2: 'Je ne peux pas voyager parce que je n'ai pas d'argent.'">
+                        <label class="block mb-1 text-gray-700">3. Transformez en clause 'si' de Type 2: "Je ne peux pas voyager parce que je n'ai pas d'argent."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Si j'avais de l'argent, je voyagerais.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                </div>
+            `,
+            'g-pronouns': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Pronoms Relatifs</h3>
+                <p class="mb-4 text-gray-600">Les pronoms relatifs (qui, que, dont, où) relient deux phrases pour éviter la répétition.</p>
+                <ul class="list-disc list-inside space-y-2 mb-6">
+                    <li><code class="bg-gray-200 rounded px-1">qui</code> remplace le <b>sujet</b>.</li>
+                    <li><code class="bg-gray-200 rounded px-1">que</code> remplace l'<b>objet direct</b>.</li>
+                    <li><code class="bg-gray-200 rounded px-1">dont</code> remplace un nom introduit par <b>'de'</b>.</li>
+                    <li><code class="bg-gray-200 rounded px-1">où</code> remplace un <b>lieu</b> ou un <b>moment</b>.</li>
+                </ul>
+                 <hr class="my-6"/>
+                <h4 class="text-lg font-semibold text-[#184e77] mb-4">Pratique</h4>
+                 <div class="space-y-4">
+                    <div class="practice-item" data-question="Combinez avec 'qui': 'J'ai une amie. Elle parle cinq langues.'">
+                        <label class="block mb-1 text-gray-700">1. Combinez avec 'qui': "J'ai une amie. Elle parle cinq langues."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="J'ai une amie qui parle cinq langues.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Combinez avec 'que': 'C'est le film. Tu as acheté ce film.'">
+                        <label class="block mb-1 text-gray-700">2. Combinez avec 'que': "C'est le film. Tu as acheté ce film."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="C'est le film que tu as acheté.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                     <div class="practice-item" data-question="Combinez avec 'dont': 'C'est l'auteur. J'ai lu le dernier livre de cet auteur.'">
+                        <label class="block mb-1 text-gray-700">3. Combinez avec 'dont': "C'est l'auteur. J'ai lu le dernier livre de cet auteur."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="C'est l'auteur dont j'ai lu le dernier livre.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Combinez avec 'qui' : 'Les enfants jouent. Ils sont bruyants.'">
+                        <label class="block mb-1 text-gray-700">4. Combinez avec 'qui' : "Les enfants jouent. Ils sont bruyants."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Les enfants qui jouent sont bruyants.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                        <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                           <span class="loading-spinner mr-2 hidden"></span>
+                           ✨ Expliquer plus ✨
+                       </button>
+                       <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Combinez avec 'que' : 'J'ai visité la ville. Tu aimes cette ville.'">
+                        <label class="block mb-1 text-gray-700">5. Combinez avec 'que' : "J'ai visité la ville. Tu aimes cette ville."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="J'ai visité la ville que tu aimes.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                        <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                           <span class="loading-spinner mr-2 hidden"></span>
+                           ✨ Expliquer plus ✨
+                       </button>
+                       <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Combinez avec 'dont' : 'C'est un problème. Il m'a parlé de ce problème.'">
+                        <label class="block mb-1 text-gray-700">6. Combinez avec 'dont' : "C'est un problème. Il m'a parlé de ce problème."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="C'est un problème dont il m'a parlé.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                        <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                           <span class="loading-spinner mr-2 hidden"></span>
+                           ✨ Expliquer plus ✨
+                       </button>
+                       <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Combinez avec 'où' : 'J'adore ce café. Nous nous sommes rencontrés dans ce café.'">
+                        <label class="block mb-1 text-gray-700">7. Combinez avec 'où' : "J'adore ce café. Nous nous sommes rencontrés dans ce café."</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="J'adore ce café où nous nous sommes rencontrés.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                        <p class="practice-feedback text-sm mt-1"></p>
+                        <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                           <span class="loading-spinner mr-2 hidden"></span>
+                           ✨ Expliquer plus ✨
+                       </button>
+                       <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                </div>
+            `,
+            'g-double-pronouns': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Pronoms Objets Doubles</h3>
+                <p class="mb-4 text-gray-600">Quand un verbe a un objet direct (le, la, les) et un objet indirect (lui, leur), l'ordre des pronoms est important.</p>
+                <ul class="list-disc list-inside space-y-2 mb-6">
+                    <li>Ordre: <code class="bg-gray-200 rounded px-1">me, te, nous, vous</code> -> <code class="bg-gray-200 rounded px-1">le, la, les</code> -> <code class="bg-gray-200 rounded px-1">lui, leur</code>.</li>
+                    <li>Exemple 1: Il donne le livre à moi -> Il <span class="font-bold">me le</span> donne.</li>
+                    <li>Exemple 2: Il donne le livre à elle -> Il <span class="font-bold">le lui</span> donne.</li>
+                </ul>
+                 <hr class="my-6"/>
+                <h4 class="text-lg font-semibold text-[#184e77] mb-4">Pratique des Pronoms Doubles</h4>
+                <p class="mb-4 text-gray-600">Remplacez les mots soulignés par les pronoms doubles corrects.</p>
+                 <div class="space-y-4">
+                    <div class="practice-item" data-question="Je donne <u>le livre à Marie</u>.">
+                        <label class="block mb-1 text-gray-700">1. Je donne <u>le livre à Marie</u>.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="le lui">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Tu as acheté <u>les billets pour nous</u>.">
+                        <label class="block mb-1 text-gray-700">2. Tu as acheté <u>les billets pour nous</u>.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="nous les">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Il va expliquer <u>le problème à ses parents</u>.">
+                        <label class="block mb-1 text-gray-700">3. Il va expliquer <u>le problème à ses parents</u>.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="le leur expliquer">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Donne <u>le stylo à moi</u>! (Impératif)">
+                        <label class="block mb-1 text-gray-700">4. Donne <u>le stylo à moi</u>! (Impératif)</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="le-moi">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="N'envoie pas <u>la lettre à Jean</u>. (Impératif Négatif)">
+                        <label class="block mb-1 text-gray-700">5. N'envoie pas <u>la lettre à Jean</u>. (Impératif Négatif)</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="ne la lui envoie pas">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Tu m'as donné <u>les clés</u>.">
+                        <label class="block mb-1 text-gray-700">6. Tu m'as donné <u>les clés</u>.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Tu me les as données.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                    <div class="practice-item" data-question="Je vais rendre <u>le livre à mes amis</u>.">
+                        <label class="block mb-1 text-gray-700">7. Je vais rendre <u>le livre à mes amis</u>.</label>
+                        <div class="flex items-center space-x-2">
+                           <input type="text" class="practice-input p-2 border border-gray-300 rounded-md w-full" data-answer="Je vais le leur rendre.">
+                           <button class="practice-check-btn py-2 px-4 bg-[#52b69a] text-white rounded-lg hover:bg-[#47a087]">Vérifier</button>
+                        </div>
+                         <p class="practice-feedback text-sm mt-1"></p>
+                         <button class="explain-btn mt-2 py-1 px-3 bg-[#168aad] text-white rounded-lg hover:bg-[#137b99] transition-colors text-sm hidden flex items-center">
+                            <span class="loading-spinner mr-2 hidden"></span>
+                            ✨ Expliquer plus ✨
+                        </button>
+                        <div class="explanation-output mt-2 p-2 bg-gray-50 rounded-md text-sm hidden"></div>
+                    </div>
+                </div>
+            `,
+            'g-conjugation-tables': `
+                <h3 class="text-xl font-bold text-[#184e77] mb-4">Tableaux de Conjugaison des Verbes Essentiels</h3>
+                <p class="mb-4 text-gray-600">Retrouvez ici les conjugaisons complètes des verbes les plus importants pour l'unité 4, dans les temps requis (Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent).</p>
+
+                <div class="space-y-8">
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Voir (to see)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">vois</td><td class="p-2 border">ai vu</td><td class="p-2 border">voyais</td><td class="p-2 border">verrai</td><td class="p-2 border">verrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">vois</td><td class="p-2 border">as vu</td><td class="p-2 border">voyais</td><td class="p-2 border">verras</td><td class="p-2 border">verrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">voit</td><td class="p-2 border">a vu</td><td class="p-2 border">voyait</td><td class="p-2 border">verra</td><td class="p-2 border">verrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">voyons</td><td class="p-2 border">avons vu</td><td class="p-2 border">voyions</td><td class="p-2 border">verrons</td><td class="p-2 border">verrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">voyez</td><td class="p-2 border">avez vu</td><td class="p-2 border">voyiez</td><td class="p-2 border">verrez</td><td class="p-2 border">verriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">voient</td><td class="p-2 border">ont vu</td><td class="p-2 border">voyaient</td><td class="p-2 border">verront</td><td class="p-2 border">verraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Recevoir (to receive)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">reçois</td><td class="p-2 border">ai reçu</td><td class="p-2 border">recevais</td><td class="p-2 border">recevrai</td><td class="p-2 border">recevrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">reçois</td><td class="p-2 border">as reçu</td><td class="p-2 border">recevais</td><td class="p-2 border">recevras</td><td class="p-2 border">recevrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">reçoit</td><td class="p-2 border">a reçu</td><td class="p-2 border">recevait</td><td class="p-2 border">recevra</td><td class="p-2 border">recevrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">recevons</td><td class="p-2 border">avons reçu</td><td class="p-2 border">recevions</td><td class="p-2 border">recevrons</td><td class="p-2 border">recevrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">recevez</td><td class="p-2 border">avez reçu</td><td class="p-2 border">receviez</td><td class="p-2 border">recevrez</td><td class="p-2 border">recevriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">reçoivent</td><td class="p-2 border">ont reçu</td><td class="p-2 border">recevaient</td><td class="p-2 border">recevront</td><td class="p-2 border">recevraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Apercevoir (to glimpse)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">aperçois</td><td class="p-2 border">ai aperçu</td><td class="p-2 border">apercevais</td><td class="p-2 border">apercevrai</td><td class="p-2 border">apercevrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">aperçois</td><td class="p-2 border">as aperçu</td><td class="p-2 border">apercevais</td><td class="p-2 border">apercevras</td><td class="p-2 border">apercevrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">aperçoit</td><td class="p-2 border">a aperçu</td><td class="p-2 border">apercevait</td><td class="p-2 border">apercevra</td><td class="p-2 border">apercevrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">apercevons</td><td class="p-2 border">avons aperçu</td><td class="p-2 border">apercevions</td><td class="p-2 border">apercevrons</td><td class="p-2 border">apercevrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">apercevez</td><td class="p-2 border">avez aperçu</td><td class="p-2 border">aperceviez</td><td class="p-2 border">apercevrez</td><td class="p-2 border">apercevriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">aperçoivent</td><td class="p-2 border">se sont aperçus</td><td class="p-2 border">apercevaient</td><td class="p-2 border">apercevront</td><td class="p-2 border">apercevraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">S'apercevoir (to realize)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">m'aperçois</td><td class="p-2 border">me suis aperçu(e)</td><td class="p-2 border">m'apercevais</td><td class="p-2 border">m'apercevrai</td><td class="p-2 border">m'apercevrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">t'aperçois</td><td class="p-2 border">t'es aperçu(e)</td><td class="p-2 border">t'apercevais</td><td class="p-2 border">t'apercevras</td><td class="p-2 border">t'apercevrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">s'aperçoit</td><td class="p-2 border">s'est aperçu(e)</td><td class="p-2 border">s'apercevait</td><td class="p-2 border">s'apercevra</td><td class="p-2 border">s'apercevrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">nous apercevons</td><td class="p-2 border">nous sommes aperçu(e)s</td><td class="p-2 border">nous apercevions</td><td class="p-2 border">nous apercevrons</td><td class="p-2 border">nous apercevrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">vous apercevez</td><td class="p-2 border">vous êtes aperçu(e)s</td><td class="p-2 border">vous aperceviez</td><td class="p-2 border">vous apercevrez</td><td class="p-2 border">vous apercevriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">s'aperçoivent</td><td class="p-2 border">se sont aperçu(e)s</td><td class="p-2 border">s'apercevaient</td><td class="p-2 border">s'apercevont</td><td class="p-2 border">s'apercevraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Croire (to believe)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">crois</td><td class="p-2 border">ai cru</td><td class="p-2 border">croyais</td><td class="p-2 border">croirai</td><td class="p-2 border">croirais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">crois</td><td class="p-2 border">as cru</td><td class="p-2 border">croyais</td><td class="p-2 border">croiras</td><td class="p-2 border">croirais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">croit</td><td class="p-2 border">a cru</td><td class="p-2 border">croyait</td><td class="p-2 border">croira</td><td class="p-2 border">croirait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">croyons</td><td class="p-2 border">avons cru</td><td class="p-2 border">croyions</td><td class="p-2 border">croirons</td><td class="p-2 border">croirions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">croyez</td><td class="p-2 border">avez cru</td><td class="p-2 border">croyiez</td><td class="p-2 border">croirez</td><td class="p-2 border">croiriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">croient</td><td class="p-2 border">ont cru</td><td class="p-2 border">croyaient</td><td class="p-2 border">croiront</td><td class="p-2 border">croiraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Aller (to go)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">vais</td><td class="p-2 border">suis allé(e)</td><td class="p-2 border">allais</td><td class="p-2 border">irai</td><td class="p-2 border">irais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">vas</td><td class="p-2 border">es allé(e)</td><td class="p-2 border">allais</td><td class="p-2 border">iras</td><td class="p-2 border">irais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">va</td><td class="p-2 border">est allé(e)</td><td class="p-2 border">allait</td><td class="p-2 border">ira</td><td class="p-2 border">irait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">allons</td><td class="p-2 border">sommes allé(e)s</td><td class="p-2 border">allions</td><td class="p-2 border">irons</td><td class="p-2 border">irions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">allez</td><td class="p-2 border">êtes allé(e)s</td><td class="p-2 border">alliez</td><td class="p-2 border">irez</td><td class="p-2 border">iriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">vont</td><td class="p-2 border">sont allé(e)s</td><td class="p-2 border">allaient</td><td class="p-2 border">iront</td><td class="p-2 border">iraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Avoir (to have)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">ai</td><td class="p-2 border">ai eu</td><td class="p-2 border">avais</td><td class="p-2 border">aurai</td><td class="p-2 border">aurais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">as</td><td class="p-2 border">as eu</td><td class="p-2 border">avais</td><td class="p-2 border">auras</td><td class="p-2 border">aurais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">a</td><td class="p-2 border">a eu</td><td class="p-2 border">avais</td><td class="p-2 border">aura</td><td class="p-2 border">aurait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">avons</td><td class="p-2 border">avons eu</td><td class="p-2 border">avions</td><td class="p-2 border">aurons</td><td class="p-2 border">aurions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">avez</td><td class="p-2 border">avez eu</td><td class="p-2 border">aviez</td><td class="p-2 border">aurez</td><td class="p-2 border">auriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">ont</td><td class="p-2 border">ont eu</td><td class="p-2 border">avaient</td><td class="p-2 border">auront</td><td class="p-2 border">auraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Être (to be)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">suis</td><td class="p-2 border">ai été</td><td class="p-2 border">étais</td><td class="p-2 border">serai</td><td class="p-2 border">serais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">es</td><td class="p-2 border">as été</td><td class="p-2 border">étais</td><td class="p-2 border">seras</td><td class="p-2 border">serais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">est</td><td class="p-2 border">a été</td><td class="p-2 border">était</td><td class="p-2 border">sera</td><td class="p-2 border">serait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">sommes</td><td class="p-2 border">avons été</td><td class="p-2 border">étions</td><td class="p-2 border">serons</td><td class="p-2 border">serions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">êtes</td><td class="p-2 border">avez été</td><td class="p-2 border">étiez</td><td class="p-2 border">serez</td><td class="p-2 border">seriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">sont</td><td class="p-2 border">ont été</td><td class="p-2 border">étaient</td><td class="p-2 border">seront</td><td class="p-2 border">seraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Faire (to do/make)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">fais</td><td class="p-2 border">ai fait</td><td class="p-2 border">faisais</td><td class="p-2 border">ferai</td><td class="p-2 border">ferais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">fais</td><td class="p-2 border">as fait</td><td class="p-2 border">faisais</td><td class="p-2 border">feras</td><td class="p-2 border">ferais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">fait</td><td class="p-2 border">a fait</td><td class="p-2 border">faisait</td><td class="p-2 border">fera</td><td class="p-2 border">ferait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">faisons</td><td class="p-2 border">avons fait</td><td class="p-2 border">faisions</td><td class="p-2 border">ferons</td><td class="p-2 border">ferions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">faites</td><td class="p-2 border">avez fait</td><td class="p-2 border">faisiez</td><td class="p-2 border">ferez</td><td class="p-2 border">feriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">font</td><td class="p-2 border">ont fait</td><td class="p-2 border">faisaient</td><td class="p-2 border">feront</td><td class="p-2 border">feraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Venir (to come)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">viens</td><td class="p-2 border">suis venu(e)</td><td class="p-2 border">venais</td><td class="p-2 border">viendrai</td><td class="p-2 border">viendrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">viens</td><td class="p-2 border">es venu(e)</td><td class="p-2 border">venais</td><td class="p-2 border">viendras</td><td class="p-2 border">viendrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">vient</td><td class="p-2 border">est venu(e)</td><td class="p-2 border">venait</td><td class="p-2 border">viendra</td><td class="p-2 border">viendrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">venons</td><td class="p-2 border">sommes venu(e)s</td><td class="p-2 border">venions</td><td class="p-2 border">viendrons</td><td class="p-2 border">viendrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">venez</td><td class="p-2 border">êtes venu(e)s</td><td class="p-2 border">veniez</td><td class="p-2 border">viendrez</td><td class="p-2 border">viendriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">viennent</td><td class="p-2 border">sont venu(e)s</td><td class="p-2 border">venaient</td><td class="p-2 border">viendront</td><td class="p-2 border">viendraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Tenir (to hold)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">tiens</td><td class="p-2 border">ai tenu</td><td class="p-2 border">tenais</td><td class="p-2 border">tiendrai</td><td class="p-2 border">tiendrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">tiens</td><td class="p-2 border">as tenu</td><td class="p-2 border">tenais</td><td class="p-2 border">tiendras</td><td class="p-2 border">tiendrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">tient</td><td class="p-2 border">a tenu</td><td class="p-2 border">tenait</td><td class="p-2 border">tiendra</td><td class="p-2 border">tiendrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">tenons</td><td class="p-2 border">avons tenu</td><td class="p-2 border">tenions</td><td class="p-2 border">tiendrons</td><td class="p-2 border">tiendrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">tenez</td><td class="p-2 border">avez tenu</td><td class="p-2 border">teniez</td><td class="p-2 border">tiendrez</td><td class="p-2 border">tiendriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">tiennent</td><td class="p-2 border">ont tenu</td><td class="p-2 border">tenaient</td><td class="p-2 border">tiendront</td><td class="p-2 border">tiendraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Devoir (must, to have to)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">dois</td><td class="p-2 border">ai dû</td><td class="p-2 border">devais</td><td class="p-2 border">devrai</td><td class="p-2 border">devrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">dois</td><td class="p-2 border">as dû</td><td class="p-2 border">devais</td><td class="p-2 border">devras</td><td class="p-2 border">devrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">doit</td><td class="p-2 border">a dû</td><td class="p-2 border">devait</td><td class="p-2 border">devra</td><td class="p-2 border">devrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">devons</td><td class="p-2 border">avons dû</td><td class="p-2 border">devions</td><td class="p-2 border">devrons</td><td class="p-2 border">devrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">devez</td><td class="p-2 border">avez dû</td><td class="p-2 border">deviez</td><td class="p-2 border">devrez</td><td class="p-2 border">devriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">doivent</td><td class="p-2 border">ont dû</td><td class="p-2 border">devaient</td><td class="p-2 border">devront</td><td class="p-2 border">devraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Pouvoir (can, to be able to)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">peux</td><td class="p-2 border">ai pu</td><td class="p-2 border">pouvais</td><td class="p-2 border">pourrai</td><td class="p-2 border">pourrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">peux</td><td class="p-2 border">as pu</td><td class="p-2 border">pouvais</td><td class="p-2 border">pourras</td><td class="p-2 border">pourrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">peut</td><td class="p-2 border">a pu</td><td class="p-2 border">pouvait</td><td class="p-2 border">pourra</td><td class="p-2 border">pourrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">pouvons</td><td class="p-2 border">avons pu</td><td class="p-2 border">pouvions</td><td class="p-2 border">pourrons</td><td class="p-2 border">pourrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">pouvez</td><td class="p-2 border">avez pu</td><td class="p-2 border">pouviez</td><td class="p-2 border">pourrez</td><td class="p-2 border">pourriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">peuvent</td><td class="p-2 border">ont pu</td><td class="p-2 border">pouvaient</td><td class="p-2 border">pourront</td><td class="p-2 border">pourraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Vouloir (to want)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">veux</td><td class="p-2 border">ai voulu</td><td class="p-2 border">voulais</td><td class="p-2 border">voudrai</td><td class="p-2 border">voudrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">veux</td><td class="p-2 border">as voulu</td><td class="p-2 border">voulais</td><td class="p-2 border">voudras</td><td class="p-2 border">voudrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">veut</td><td class="p-2 border">a voulu</td><td class="p-2 border">voulait</td><td class="p-2 border">voudra</td><td class="p-2 border">voudrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">voulons</td><td class="p-2 border">avons voulu</td><td class="p-2 border">voulions</td><td class="p-2 border">voudrons</td><td class="p-2 border">voudrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">voulez</td><td class="p-2 border">avez voulu</td><td class="p-2 border">vouliez</td><td class="p-2 border">voudrez</td><td class="p-2 border">voudriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">veulent</td><td class="p-2 border">ont voulu</td><td class="p-2 border">voulaient</td><td class="p-2 border">voudront</td><td class="p-2 border">voudraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Savoir (to know a fact)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">sais</td><td class="p-2 border">ai su</td><td class="p-2 border">savais</td><td class="p-2 border">saurai</td><td class="p-2 border">saurais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">sais</td><td class="p-2 border">as su</td><td class="p-2 border">savais</td><td class="p-2 border">sauras</td><td class="p-2 border">saurais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">sait</td><td class="p-2 border">a su</td><td class="p-2 border">savait</td><td class="p-2 border">saura</td><td class="p-2 border">saurait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">savons</td><td class="p-2 border">avons su</td><td class="p-2 border">savions</td><td class="p-2 border">saurons</td><td class="p-2 border">saurions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">savez</td><td class="p-2 border">avez su</td><td class="p-2 border">saviez</td><td class="p-2 border">saurez</td><td class="p-2 border">sauriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">savent</td><td class="p-2 border">ont su</td><td class="p-2 border">savaient</td><td class="p-2 border">sauront</td><td class="p-2 border">sauraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Courir (to run)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">cours</td><td class="p-2 border">ai couru</td><td class="p-2 border">courais</td><td class="p-2 border">courrai</td><td class="p-2 border">courrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">cours</td><td class="p-2 border">as couru</td><td class="p-2 border">courais</td><td class="p-2 border">courras</td><td class="p-2 border">courrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">court</td><td class="p-2 border">a couru</td><td class="p-2 border">courait</td><td class="p-2 border">courra</td><td class="p-2 border">courrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">courons</td><td class="p-2 border">avons couru</td><td class="p-2 border">courions</td><td class="p-2 border">courrons</td><td class="p-2 border">courrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">courez</td><td class="p-2 border">avez couru</td><td class="p-2 border">couriez</td><td class="p-2 border">courrez</td><td class="p-2 border">courriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">courent</td><td class="p-2 border">ont couru</td><td class="p-2 border">couraient</td><td class="p-2 border">courront</td><td class="p-2 border">courraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Mourir (to die)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">meurs</td><td class="p-2 border">suis mort(e)</td><td class="p-2 border">mourais</td><td class="p-2 border">mourrai</td><td class="p-2 border">mourrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">meurs</td><td class="p-2 border">es mort(e)</td><td class="p-2 border">mourais</td><td class="p-2 border">mourras</td><td class="p-2 border">mourrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">meurt</td><td class="p-2 border">est mort(e)</td><td class="p-2 border">mourait</td><td class="p-2 border">mourra</td><td class="p-2 border">mourrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">mourons</td><td class="p-2 border">sommes mort(e)s</td><td class="p-2 border">mourions</td><td class="p-2 border">mourrons</td><td class="p-2 border">mourrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">mourez</td><td class="p-2 border">êtes mort(e)s</td><td class="p-2 border">mouriez</td><td class="p-2 border">mourrez</td><td class="p-2 border">mourriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">meurent</td><td class="p-2 border">sont mort(e)s</td><td class="p-2 border">mouraient</td><td class="p-2 border">mourront</td><td class="p-2 border">mourraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Envoyer (to send)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">envoie</td><td class="p-2 border">ai envoyé</td><td class="p-2 border">envoyais</td><td class="p-2 border">enverrai</td><td class="p-2 border">enverrais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">envoies</td><td class="p-2 border">as envoyé</td><td class="p-2 border">envoyais</td><td class="p-2 border">enverras</td><td class="p-2 border">enverrais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">envoie</td><td class="p-2 border">a envoyé</td><td class="p-2 border">envoyait</td><td class="p-2 border">enverra</td><td class="p-2 border">enverrait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">envoyons</td><td class="p-2 border">avons envoyé</td><td class="p-2 border">envoyions</td><td class="p-2 border">enverrons</td><td class="p-2 border">enverrions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">envoyez</td><td class="p-2 border">avez envoyé</td><td class="p-2 border">envoyiez</td><td class="p-2 border">enverrez</td><td class="p-2 border">enverriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">envoient</td><td class="p-2 border">ont envoyé</td><td class="p-2 border">envoyaient</td><td class="p-2 border">enverront</td><td class="p-2 border">enverraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Appeler (to call)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">appelle</td><td class="p-2 border">ai appelé</td><td class="p-2 border">appelais</td><td class="p-2 border">appellerai</td><td class="p-2 border">appellerait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">appelles</td><td class="p-2 border">as appelé</td><td class="p-2 border">appelais</td><td class="p-2 border">appelleras</td><td class="p-2 border">appellerait</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">appelle</td><td class="p-2 border">a appelé</td><td class="p-2 border">appelait</td><td class="p-2 border">appellera</td><td class="p-2 border">appellerait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">appelons</td><td class="p-2 border">avons appelé</td><td class="p-2 border">appelions</td><td class="p-2 border">appellerons</td><td class="p-2 border">appellerions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">appelez</td><td class="p-2 border">avez appelé</td><td class="p-2 border">appeliez</td><td class="p-2 border">appellerez</td><td class="p-2 border">appelleriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">appellent</td><td class="p-2 border">ont appelé</td><td class="p-2 border">appelaient</td><td class="p-2 border">appelleront</td><td class="p-2 border">appelleraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Jeter (to throw)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">jette</td><td class="p-2 border">ai jeté</td><td class="p-2 border">jetais</td><td class="p-2 border">jetterai</td><td class="p-2 border">jetterais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">jettes</td><td class="p-2 border">as jeté</td><td class="p-2 border">jetais</td><td class="p-2 border">jetteras</td><td class="p-2 border">jetterais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">jette</td><td class="p-2 border">a jeté</td><td class="p-2 border">jetait</td><td class="p-2 border">jettera</td><td class="p-2 border">jetterait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">jetons</td><td class="p-2 border">avons jeté</td><td class="p-2 border">jetions</td><td class="p-2 border">jetterons</td><td class="p-2 border">jetterions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">jetez</td><td class="p-2 border">avez jeté</td><td class="p-2 border">jetiez</td><td class="p-2 border">jetterez</td><td class="p-2 border">jetteriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">jettent</td><td class="p-2 border">ont jeté</td><td class="p-2 border">jetaient</td><td class="p-2 border">jetteront</td><td class="p-2 border">jetteraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Acheter (to buy)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">achète</td><td class="p-2 border">ai acheté</td><td class="p-2 border">achetais</td><td class="p-2 border">achèterai</td><td class="p-2 border">achèterais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">achètes</td><td class="p-2 border">as acheté</td><td class="p-2 border">achetais</td><td class="p-2 border">achèteras</td><td class="p-2 border">achèterais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">achète</td><td class="p-2 border">a acheté</td><td class="p-2 border">achetait</td><td class="p-2 border">achètera</td><td class="p-2 border">achèterait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">achetons</td><td class="p-2 border">avons acheté</td><td class="p-2 border">achetions</td><td class="p-2 border">achèterons</td><td class="p-2 border">achèterions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">achetez</td><td class="p-2 border">avez acheté</td><td class="p-2 border">achetiez</td><td class="p-2 border">achèterez</td><td class="p-2 border">achèteriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">achètent</td><td class="p-2 border">ont acheté</td><td class="p-2 border">achetaient</td><td class="p-2 border">achèteront</td><td class="p-2 border">achèteraient</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-[#184e77] mb-2">Régler (to settle, adjust, pay)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Présent, Passé Composé, Imparfait, Futur Simple, Conditionnel Présent</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left border-collapse">
+                                <thead><tr><th class="p-2 border">Personne</th><th class="p-2 border">Présent</th><th class="p-2 border">Passé Composé</th><th class="p-2 border">Imparfait</th><th class="p-2 border">Futur Simple</th><th class="p-2 border">Conditionnel Présent</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="p-2 border">Je</td><td class="p-2 border">règle</td><td class="p-2 border">ai réglé</td><td class="p-2 border">réglais</td><td class="p-2 border">réglerai</td><td class="p-2 border">réglerais</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Tu</td><td class="p-2 border">règles</td><td class="p-2 border">as réglé</td><td class="p-2 border">réglais</td><td class="p-2 border">régleras</td><td class="p-2 border">réglerais</td></tr>
+                                    <tr><td class="p-2 border">Il/Elle/On</td><td class="p-2 border">règle</td><td class="p-2 border">a réglé</td><td class="p-2 border">réglait</td><td class="p-2 border">réglerons</td><td class="p-2 border">réglerait</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Nous</td><td class="p-2 border">réglons</td><td class="p-2 border">avons réglé</td><td class="p-2 border">régions</td><td class="p-2 border">réglerons</td><td class="p-2 border">réglerions</td></tr>
+                                    <tr><td class="p-2 border">Vous</td><td class="p-2 border">réglez</td><td class="p-2 border">avez réglé</td><td class="p-2 border">régiez</td><td class="p-2 border">régleriez</td><td class="p-2 border">régleriez</td></tr>
+                                    <tr class="bg-gray-50"><td class="p-2 border">Ils/Elles</td><td class="p-2 border">règlent</td><td class="p-2 border">ont réglé</td><td class="p-2 border">réglaient</td><td class="p-2 border">régleront</td><td class="p-2 border">réglerions</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            `
+        };
+
+        let currentCardIndex = 0;
+        let currentVocabSet = 'unite4a';
+
+        const flashcard = document.getElementById('flashcard');
+        const frontText = document.getElementById('flashcard-front-text');
+        const backText = document.getElementById('flashcard-back-text');
+        const cardCounter = document.getElementById('card-counter');
+        const vocabSelect = document.getElementById('vocab-select');
+        const nextBtn = document.getElementById('next-card');
+        const prevBtn = document.getElementById('prev-card');
+        const examplesOutput = document.getElementById('examples-output');
+        const examplesContent = document.getElementById('examples-content');
+
+        const grammarNav = document.getElementById('grammar-nav');
+        const grammarContentDisplay = document.getElementById('grammar-content-display');
+        const essayTextarea = document.getElementById('essay-textarea');
+        const feedbackContent = document.getElementById('feedback-content');
+
+        const wordBankSearch = document.getElementById('word-bank-search');
+        const wordBankBody = document.getElementById('word-bank-body');
+
+        function updateFlashcard() {
+            if (flashcard.classList.contains('is-flipped')) {
+                flashcard.classList.remove('is-flipped');
+            }
+            examplesOutput.classList.add('hidden');
+            setTimeout(() => {
+                const vocabList = vocabData[currentVocabSet];
+                if (vocabList && vocabList.length > 0) {
+                    frontText.textContent = vocabList[currentCardIndex].fr;
+                    backText.textContent = vocabList[currentCardIndex].en;
+                    cardCounter.textContent = `${currentCardIndex + 1} / ${vocabList.length}`;
+                } else {
+                    frontText.textContent = "Aucun mot disponible";
+                    backText.textContent = "No words available";
+                    cardCounter.textContent = "0 / 0";
+                }
+            }, 300);
+        }
+
+        function setupVocab() {
+            currentCardIndex = 0;
+            currentVocabSet = vocabSelect.value;
+            updateFlashcard();
+        }
+
+        nextBtn.addEventListener('click', () => {
+            const vocabList = vocabData[currentVocabSet];
+            if (vocabList.length > 0) {
+                currentCardIndex = (currentCardIndex + 1) % vocabList.length;
+                updateFlashcard();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            const vocabList = vocabData[currentVocabSet];
+            if (vocabList.length > 0) {
+                currentCardIndex = (currentCardIndex - 1 + vocabList.length) % vocabList.length;
+                updateFlashcard();
+            }
+        });
+
+        vocabSelect.addEventListener('change', setupVocab);
+
+        function renderWordBank(filter = '') {
+            wordBankBody.innerHTML = '';
+            const lowerCaseFilter = filter.toLowerCase();
+            const filteredWords = wordBankData.filter(word =>
+                word.fr.toLowerCase().includes(lowerCaseFilter) ||
+                word.en.toLowerCase().includes(lowerCaseFilter) ||
+                word.example_fr.toLowerCase().includes(lowerCaseFilter) ||
+                word.example_en.toLowerCase().includes(lowerCaseFilter)
+            );
+
+            if (filteredWords.length === 0) {
+                wordBankBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucun mot trouvé pour "${filter}"</td></tr>`;
+                return;
+            }
+
+            filteredWords.forEach(word => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-100';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${word.fr}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${word.gender}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${word.en}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${word.example_fr}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${word.example_en}</td>
+                `;
+                wordBankBody.appendChild(row);
+            });
+        }
+
+        wordBankSearch.addEventListener('input', (e) => {
+            renderWordBank(e.target.value);
+        });
+
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            if (tabName === 'vocab') {
+                renderWordBank();
+            }
+        }
+
+        function updateGrammarContent(targetId) {
+            grammarContentDisplay.innerHTML = grammarContent[targetId];
+            document.querySelectorAll('.practice-check-btn').forEach(button => {
+                button.addEventListener('click', checkAnswer);
+            });
+            document.querySelectorAll('.explain-btn').forEach(button => {
+                button.setAttribute('tabindex', '0');
+                button.addEventListener('click', function () {
+                    const practiceItem = this.closest('.practice-item');
+                    const explanationOutput = practiceItem.querySelector('.explanation-output');
+                    explanationOutput.classList.toggle('hidden');
+                });
+                button.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        const practiceItem = this.closest('.practice-item');
+                        const explanationOutput = practiceItem.querySelector('.explanation-output');
+                        explanationOutput.classList.toggle('hidden');
+                    }
+                });
+            });
+        }
+
+        function checkAnswer(event) {
+            const button = event.currentTarget;
+            const practiceItem = button.closest('.practice-item');
+            const input = practiceItem.querySelector('.practice-input');
+            const feedback = practiceItem.querySelector('.practice-feedback');
+            const explainBtn = practiceItem.querySelector('.explain-btn');
+            const explanationOutput = practiceItem.querySelector('.explanation-output');
+
+            const userAnswer = input.value.trim().toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ');
+            const correctAnswer = input.dataset.answer.trim().toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ');
+
+            input.classList.remove('correct', 'incorrect');
+            explainBtn.classList.add('hidden');
+            explanationOutput.classList.add('hidden');
+
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct');
+                feedback.textContent = 'Correct !';
+                feedback.style.color = '#22c55e';
+            } else {
+                input.classList.add('incorrect');
+                feedback.textContent = `Incorrect. La bonne réponse est : ${input.dataset.answer}`;
+                feedback.style.color = '#ef4444';
+                explainBtn.classList.remove('hidden');
+            }
+        }
+
+        grammarNav.addEventListener('click', (e) => {
+            if (e.target.classList.contains('grammar-nav-btn')) {
+                const targetId = e.target.dataset.target;
+                updateGrammarContent(targetId);
+
+                document.querySelectorAll('.grammar-nav-btn').forEach(btn => {
+                    btn.classList.remove('bg-[#1e6091]', 'text-white');
+                    btn.classList.add('bg-white');
+                });
+
+                e.target.classList.add('bg-[#1e6091]', 'text-white');
+                e.target.classList.remove('bg-white');
+            }
+        });
+
+        window.onload = () => {
+            setupVocab();
+            document.querySelector('.tab-btn').click();
+            document.querySelector('#grammar-nav .grammar-nav-btn').click();
+            renderWordBank();
+
+            document.querySelectorAll('.underline[data-term]').forEach(element => {
+                element.addEventListener('click', function () {
+                    const term = this.dataset.term;
+                    const essayExplanationSection = document.querySelector('#essay-sample .mt-8');
+                    const explanationList = essayExplanationSection.querySelector('ul');
+
+                    const targetExplanation = Array.from(explanationList.children).find(li =>
+                        li.querySelector('strong')?.textContent.includes(term.split('(')[0].trim())
+                    );
+
+                    if (targetExplanation) {
+                        targetExplanation.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetExplanation.style.backgroundColor = '#e0f2f7';
+                        setTimeout(() => {
+                            targetExplanation.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                });
+            });
+        };
+    </script>
+</body>
+
+</html>
